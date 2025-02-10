@@ -10,15 +10,15 @@
             <v-form>
               <v-text-field prepend-icon="person" type="text" v-model="user.email" label="E-mail"></v-text-field>
               <v-text-field
-                  prepend-icon="lock"
-                  type="password"
-                  v-model="user.password"
-                  label="Mot de passe"
+                prepend-icon="lock"
+                type="password"
+                v-model="user.password"
+                label="Mot de passe"
               ></v-text-field>
             </v-form>
             <router-link to="/register" class="text-center">Pas encore de compte ? Créer un compte</router-link>
             <v-alert type="error" v-if="errorLogin">
-              Utilisateur ou mot de passe invalide
+              {{ errorMessage }}
             </v-alert>
           </v-card-text>
           <v-card-actions>
@@ -30,45 +30,45 @@
     </v-layout>
   </v-container>
 </template>
-<script>
+
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '../stores/user.js';
 import AuthService from "../service/AuthService.js";
 
-export default {
-  name: "Login",
-  data() {
-    return {
-      errorLogin: false,
-      user: {
-        email: '',
-        password: ''
-      }
-    };
-  },
-  methods: {
-    async login() {  // Make the login method async
-      this.errorLogin = false;
-      try {
-        const response = await AuthService.login(this.user);
-        console.log('Login successful:', response.data);
-        // Redirect to the home page or another protected route
-        this.$router.push('/');
+const router = useRouter();
+const userStore = useUserStore();
 
-      } catch (error) {
-        console.error('Login failed:', error);
-        this.errorLogin = true;
-        // Display a more specific error message to the user if available
-        if (error.response && error.response.data && error.response.data.message) {
-          this.errorMessage = error.response.data.message; // Use a dedicated error message variable
-        } else {
-          this.errorMessage = "An error occurred during login."; // Generic error message
-        }
+const errorLogin = ref(false);
+const errorMessage = ref("");
+const user = ref({
+  email: '',
+  password: ''
+});
 
-      }
+const login = async () => {
+  errorLogin.value = false;
+  try {
+    const response = await AuthService.login(user.value);
+    console.log('Login successful:', response.data);
+
+    const token = AuthService.getCurrentUser()['token'];
+    const userData = AuthService.getUserData(token);
+    userStore.setUser(userData);
+
+    // Redirection après connexion
+    router.push('/');
+
+  } catch (error) {
+    console.error('Login failed:', error);
+    errorLogin.value = true;
+
+    if (error.response?.data?.message) {
+      errorMessage.value = error.response.data.message;
+    } else {
+      errorMessage.value = "Une erreur est survenue lors de la connexion.";
     }
   }
 };
 </script>
-
-<style>
-
-</style>

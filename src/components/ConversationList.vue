@@ -14,8 +14,9 @@
     </div>
 
     <!-- Chat List -->
+     <!-- :subtitle="chat.messages[chat.messages.length - 1]?.text"  -->
     <v-list lines="two">
-      <v-list-item v-for="chat in filteredChats" :key="chat.id" :title="chat.name" :subtitle="chat.messages[chat.messages.length - 1]?.text" 
+      <v-list-item v-for="chat in filteredChats" :key="chat.id" :title="chat.name"
         :active="selectedChatId === chat.id" @click="selectChat(chat)">
         <template v-slot:prepend>
           <v-avatar class="ma-1" size="48">

@@ -82,6 +82,8 @@
 </template>
 
 <script>
+import "@/assets/css/components/chatWindow.css";
+
 export default {
   name: 'InstagramChat',
   props: {
@@ -94,11 +96,11 @@ export default {
     sendMessage() {
       if (!this.newMessage.trim() || !this.selectedChat) return;
 
-      this.selectedChat.messages.push({
-        text: this.newMessage,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isSent: true,
-      });
+      // this.selectedChat.messages.push({
+      //   text: this.newMessage,
+      //   time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      //   isSent: true,
+      // });
 
       this.newMessage = '';
       this.$nextTick(() => {
@@ -122,82 +124,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.chat-container {
-  height: 80vh;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  position: static;
-}
-
-.chat-header {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.chat-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  background-color: white;
-}
-
-.messages-container {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.message-wrapper {
-  display: flex;
-  flex-direction: column;
-  max-width: 70%;
-}
-
-.message-wrapper.sent {
-  align-self: flex-end;
-  align-items: flex-end;
-}
-
-.message-wrapper.received {
-  align-self: flex-start;
-  align-items: flex-start;
-}
-
-.message-bubble {
-  margin-bottom: 2px;
-}
-
-.message-bubble.sent {
-  border-bottom-right-radius: 4px !important;
-}
-
-.message-bubble.received {
-  border-bottom-left-radius: 4px !important;
-}
-
-.message-time {
-  font-size: 0.75rem;
-}
-
-.chat-footer {
-  border-top: 1px solid #e0e0e0;
-  padding: 8px 16px;
-}
-
-.v-textarea {
-  max-height: 20vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  border: none;
-}
-
-.v-textarea__control {
-  border: none;
-}
-
-.v-textarea__input {
-  padding: 8px;
-}
-</style>
