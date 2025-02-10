@@ -45,9 +45,9 @@ class AuthService {
         return JSON.parse(localStorage.getItem('user'));
     }
 
-    isAuthenticated() { // Helper method to check if user is authenticated
-        return !!localStorage.getItem('user'); // Returns true if user is logged in, false otherwise.
+    isAuthenticated() {
+        return !!localStorage.getItem('user');
     }
 }
 
-export default new AuthService(); // Export an instance of the service
+export default new AuthService();
