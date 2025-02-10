@@ -39,6 +39,7 @@
                 block
                 variant="flat"
                 color="error"
+                @click="logout"
             >
               Déconnexion
             </v-btn>
@@ -70,7 +71,9 @@
   </v-app>
 </template>
 <script setup>
+  import AuthService from "@/service/AuthService.js";
 import {ref} from "vue";
+  import {router} from "@/router/router.js";
 
 const routes = ref([
   {title: 'Carte des urgences', icon: 'mdi-map', name: 'map'},
@@ -78,4 +81,8 @@ const routes = ref([
   {title: 'Forum', icon: 'mdi-forum', name: 'forum'},
   {title: 'Classement', icon: 'mdi-podium', name: 'classement'},
 ])
+ const logout = () =>{
+  AuthService.logout();
+  router.push('/login');
+  };
 </script>
