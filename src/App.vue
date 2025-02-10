@@ -1,9 +1,12 @@
 <template>
-  <router-view />
+  <v-app>
+    <Nav />
+    <v-main> <router-view /> </v-main> </v-app>
 </template>
 
 <script setup>
-  import MessengerView from './views/messengerView.vue';
+import Nav from "./components/Nav.vue";
+import { RouterView } from 'vue-router'
 </script>
 
 <style>
