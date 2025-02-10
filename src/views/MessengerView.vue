@@ -1,0 +1,121 @@
+<template>
+  <v-layout fill-height column>
+    <conversation-list v-model="drawer" :chats="chats" :selected-chat-id="selectedChat?.id"
+      @chat-selected="handleChatSelect" />
+
+    <v-main fill-height>
+      <template v-if="selectedChat">
+        <chat-window :selectedChat="selectedChat"
+          @send-message="handleSendMessage" />
+      </template>
+      <v-container v-else class="d-flex align-center justify-center" fluid>
+        <div class="text-center">
+          <v-icon size="64" color="grey-lighten-1">mdi-message-outline</v-icon>
+          <div class="text-h6 mt-4 text-grey">Select a conversation to start messaging</div>
+        </div>
+      </v-container>
+    </v-main>
+  </v-layout>
+</template>
+
+<script>
+import ConversationList from '../components/ConversationList.vue'
+import ChatWindow from '../components/ChatWindow.vue'
+
+export default {
+  components: {
+    ConversationList,
+    ChatWindow
+  },
+  data() {
+    return {
+      drawer: true,
+      selectedChat: null,
+      chats: [
+        {
+          id: 1,
+          name: 'John Doe',
+          avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+          lastMessage: 'Hey, how are you?',
+          time: '2:30 PM',
+          messages: [
+            {
+              text: 'Hey, how are you?',
+              time: '2:30 PM',
+              isSent: false,
+            },
+            {
+              text: 'I\'m good, thanks! How about you?',
+              time: '2:31 PM',
+              isSent: true,
+            },
+            {
+              text: 'Just working on some new projects',
+              time: '2:31 PM',
+              isSent: true,
+            },
+            {
+              text: 'That sounds interesting! Can you tell me more?',
+              time: '2:32 PM',
+              isSent: false,
+            },
+          ]
+        },
+        {
+          id: 2,
+          name: 'Jane Smith',
+          avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
+          lastMessage: 'The meeting is at 3 PM',
+          time: '1:45 PM',
+          messages: [
+            {
+              text: 'Hi Jane, are we still meeting tomorrow?',
+              time: '1:40 PM',
+              isSent: true,
+            },
+            {
+              text: 'Yes, 2 PM works for me',
+              time: '1:42 PM',
+              isSent: false,
+            },
+            {
+              text: 'Perfect, looking forward to it',
+              time: '1:43 PM',
+              isSent: true,
+            },
+            {
+              text: 'The meeting is at 3 PM',
+              time: '1:45 PM',
+              isSent: false,
+            },
+          ]
+        }
+      ]
+    }
+  },
+
+  methods: {
+    handleChatSelect(chat) {
+      this.selectedChat = chat
+    },
+    handleSendMessage(message) {
+      if (!this.selectedChat) return
+
+      // Add message to chat messages
+      this.selectedChat.messages.push({
+        text: message,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isSent: true,
+      })
+
+      // Update last message in chat list
+      this.selectedChat.lastMessage = message
+      this.selectedChat.time = new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+  }
+}
+</script>
+
