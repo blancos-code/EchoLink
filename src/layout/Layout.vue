@@ -51,7 +51,7 @@
             <v-list-item prepend-icon="mdi-map" title="Carte des urgences" value="map"></v-list-item>
             <v-list-item prepend-icon="mdi-message" title="Messages" value="messages"></v-list-item>
             <v-list-item prepend-icon="mdi-forum" title="Forum" value="forum"></v-list-item>
-            <v-list-item prepend-icon="mdi-podium" title="Classementsy" value="ranking"></v-list-item>
+            <v-list-item prepend-icon="mdi-podium" title="Classements" value="ranking"></v-list-item>
           </v-list>
         </v-navigation-drawer>
         <v-main>
