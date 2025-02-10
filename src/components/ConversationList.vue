@@ -4,7 +4,7 @@
     <v-toolbar flat>
       <v-toolbar-title>Messages</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon="mdi-square-edit-outline"></v-btn>
+      <v-btn icon="mdi-square-edit-outline" @click="createChat()"></v-btn>
     </v-toolbar>
 
     <!-- Search -->
@@ -15,7 +15,7 @@
 
     <!-- Chat List -->
     <v-list lines="two">
-      <v-list-item v-for="chat in filteredChats" :key="chat.id" :title="chat.name" :subtitle="chat.lastMessage"
+      <v-list-item v-for="chat in filteredChats" :key="chat.id" :title="chat.name" :subtitle="chat.messages[chat.messages.length - 1]?.text" 
         :active="selectedChatId === chat.id" @click="selectChat(chat)">
         <template v-slot:prepend>
           <v-avatar class="ma-1" size="48">
@@ -76,6 +76,9 @@ export default {
   methods: {
     selectChat(chat) {
       this.$emit('chat-selected', chat)
+    },
+    createChat() {
+      this.$emit('create-chat')
     }
   }
 
