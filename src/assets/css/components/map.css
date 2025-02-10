@@ -1,0 +1,125 @@
+#map {
+    margin: 20px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.incident-popup) {
+    font-family: 'Arial', sans-serif;
+}
+
+:deep(.incident-popup .leaflet-popup-content-wrapper) {
+    border-radius: 8px;
+    padding: 0;
+}
+
+:deep(.incident-popup .leaflet-popup-content) {
+    margin: 0;
+    width: 300px !important;
+}
+
+:deep(.incident-header) {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+:deep(.incident-header.priority-1) {
+    background-color: #ffebee;
+}
+
+:deep(.incident-header.priority-2) {
+    background-color: #fff3e0;
+}
+
+
+:deep(.priority-badge) {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+:deep(.priority-badge) {
+    background-color: gray;
+    color: white;
+}
+
+:deep(.reporter-img) {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+:deep(.incident-info) {
+    flex-grow: 1;
+}
+
+:deep(.incident-info h3) {
+    margin: 0;
+    font-size: 16px;
+}
+
+:deep(.incident-type) {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: #666;
+}
+
+:deep(.incident-details) {
+    padding: 15px;
+}
+
+:deep(.incident-details p) {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+:deep(.contact-btn) {
+    width: 100%;
+    padding: 10px;
+    color: white;
+    border: none;
+    background-color: black;
+    border-radius: 0 0 8px 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+:deep(.contact-btn.priority-1) {
+    background-color: #ff4444;
+}
+
+:deep(.contact-btn.priority-2) {
+    background-color: #ffbb33;
+}
+
+:deep(.contact-btn.priority-3) {
+    background-color: #00C851;
+}
+
+:deep(.contact-btn:hover) {
+    opacity: 0.9;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+:deep(.pulse-animation) {
+    animation: pulse 0.5s infinite;
+}
