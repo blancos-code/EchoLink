@@ -1,12 +1,15 @@
 <template>
   <v-app>
-    <v-main>
-      <v-container>
-        <v-btn>COUCOU</v-btn>
-      </v-container>
-    </v-main>
+      <MessengerView/>    
   </v-app>
 </template>
 
 <script setup>
+  import MessengerView from './views/messengerView.vue';
 </script>
+
+<style>
+  body {
+    margin: 0;
+  }
+</style>
