@@ -1,12 +1,3 @@
 <template>
-  <v-app>
-    <v-main>
-      <v-container>
-        <v-btn>COUCOU</v-btn>
-      </v-container>
-    </v-main>
-  </v-app>
+  <router-view />
 </template>
-
-<script setup>
-</script>
