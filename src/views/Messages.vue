@@ -3,7 +3,7 @@
     @chat-selected="handleChatSelect" @create-chat="showCreateChatForm = true" />
 
   <template v-if="selectedChat">
-    <chat-window :selectedChat="selectedChat" @send-message="handleSendMessage" @back="handleBack" />
+    <chat-window :selectedChat="selectedChat" :messageHistory="messages" :userId="userStore.userId" @send-message="handleSendMessage" @back="handleBack" />
   </template>
   <v-container v-else class="d-flex align-center justify-center" fluid>
     <div class="text-center">
@@ -38,6 +38,7 @@ const messages = ref([]);
 
 const handleChatSelect = (chat) => {
   selectedChat.value = chat;
+  loadMessages(chat._id);
 };
 
 const handleBack = () => {
@@ -55,10 +56,20 @@ const handleSendMessage = (message) => {
 };
 
 const addConversation = (newChat) => {
-  conversations.value.push(newChat);
-  showCreateChatForm.value = false;
-};
+  const exists = conversations.value.some(chat => 
+    chat.participants.length === newChat.participants.length &&
+    chat.participants.every(p1 =>
+      newChat.participants.some(p2 => p1._id === p2._id)
+    )
+  );
 
+  if (!exists) {
+    conversations.value.push(newChat);
+    showCreateChatForm.value = false;
+  } else {
+    selectedChat.value = newChat;
+  }
+};
 const cancelCreation = () => {
   showCreateChatForm.value = false;
 }

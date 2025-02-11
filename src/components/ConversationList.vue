@@ -20,7 +20,7 @@
         :active="selectedChatId === chat.id" @click="selectChat(chat)">
         <template v-slot:prepend>
           <v-avatar class="ma-1" size="48">
-            <v-img :src="chat.participants[1].image"></v-img>
+            <v-img :src="chat.participants[1].image"></v-img> <!-- TODO faire prendre l'autre que sois -->
           </v-avatar>
         </template>
         <template v-slot:append>

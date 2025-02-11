@@ -27,15 +27,15 @@
     <!-- Chat Messages -->
     <v-card class="chat-content" flat>
       <v-card-text class="messages-container" ref="messagesContainer">
-        <template v-for="(message, index) in selectedChat?.messages" :key="index">
-          <div :class="['message-wrapper', message.isSent ? 'sent' : 'received']">
-            <v-card :color="message.isSent ? 'primary' : 'grey lighten-3'"
-              :class="['message-bubble', message.isSent ? 'sent' : 'received']" rounded="lg">
-              <v-card-text :class="['pa-2', message.isSent ? 'white--text' : '']">
+        <template v-for="(message, index) in messageHistory" :key="index">
+          <div :class="['message-wrapper', message.sender == userId ? 'sent' : 'received']">
+            <v-card :color="message.sender == userId ? 'primary' : 'grey lighten-3'"
+              :class="['message-bubble', message.sender == userId ? 'sent' : 'received']" rounded="lg">
+              <v-card-text :class="['pa-2', message.sender == userId ? 'white--text' : '']">
                 {{ message.text }}
               </v-card-text>
             </v-card>
-            <div class="caption text-grey message-time">{{ message.time }}</div>
+            <div class="caption text-grey message-time">{{ formatDate(message.createdAt) }}</div>
           </div>
         </template>
       </v-card-text>
@@ -81,26 +81,43 @@
   </v-container>
 </template>
 
+<script setup>
+import { formatDate } from "../utils/date";
+
+</script>
+
 <script>
 import "@/assets/css/components/chatWindow.css";
+import MessageService from "../service/MessageService";
 
 export default {
   name: 'InstagramChat',
   props: {
     selectedChat: Object,
+    messageHistory: Array,
+    userId: String,
   },
   data: () => ({
     newMessage: '',
   }),
   methods: {
-    sendMessage() {
+    async sendMessage() {
       if (!this.newMessage.trim() || !this.selectedChat) return;
 
-      // this.selectedChat.messages.push({
-      //   text: this.newMessage,
-      //   time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      //   isSent: true,
-      // });
+      try {
+        const newSavedMessage = await MessageService.sendMessage({
+          conversationId: this.selectedChat._id,
+          text: this.newMessage
+        });
+
+        this.messageHistory.push(newSavedMessage);
+
+        // emit('chatCreated', newChat);
+        // emit('update:modelValue', false);
+      } catch (error) {
+        console.error('Erreur lors de l\'envoie du message:', error);
+      }
+
 
       this.newMessage = '';
       this.$nextTick(() => {

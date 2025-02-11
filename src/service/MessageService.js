@@ -55,7 +55,7 @@ class MessageService {
   async createConversation({ name, participantId }) {
     try {
       const userId = JSON.parse(localStorage.getItem('userId'));
-      const response = await axios.post(`${this.API_URL}/conversations/create`, {
+      const response = await axios.post(`${this.API_URL}/conversations`, {
         name,
         sender: userId,
         recipient: participantId
@@ -77,16 +77,30 @@ class MessageService {
     }
   }
 
-  sendMessage(sender, recipient, text) {
-    if (this.socket?.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({
-        type: 'private_message',
-        sender,
-        recipient,
+  async sendMessage({ conversationId, text }) {
+    try {
+      const userId = JSON.parse(localStorage.getItem('userId'));
+      const response = await axios.post(`${this.API_URL}/conversations/${conversationId}`, {
+        sender: userId,
         text
-      }));
+      });
+
+      // if (this.socket?.readyState === WebSocket.OPEN) {
+      //   this.socket.send(JSON.stringify({
+      //     type: 'private_message',
+      //     sender,
+      //     recipient,
+      //     text
+      //   }));
+      // }
+
+      return response.data;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
     }
   }
+
 }
 
 export default new MessageService();
