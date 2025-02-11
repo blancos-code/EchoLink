@@ -41,7 +41,7 @@ const createThematique = async () => {
 
     titre.value = '';
     form.value.resetValidation();
-
+    emit('cancel');
   } catch (error) {
     console.error('Error creating thematique:', error);
   }

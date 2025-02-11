@@ -1,20 +1,20 @@
 <template>
   <conversation-list
-    v-model="drawer"
-    :chats="conversations"
-    :selected-chat-id="selectedChat?.id"
-    @chat-selected="handleChatSelect"
-    @create-chat="showCreateChatForm = true"
+      v-model="drawer"
+      :chats="conversations"
+      :selected-chat-id="selectedChat?.id"
+      @chat-selected="handleChatSelect"
+      @create-chat="showCreateChatForm = true"
   />
 
   <template v-if="selectedChat">
     <chat-window
-      :selectedChat="selectedChat"
-      :messageHistory="messages"
-      :userId="userStore.userId"
-      :typing-users="Array.from(typingUsers)"
-      @typing="handleTyping"
-      @back="handleBack"
+        :selectedChat="selectedChat"
+        :messageHistory="messages"
+        :userId="userStore.userId"
+        :typing-users="Array.from(typingUsers)"
+        @typing="handleTyping"
+        @back="handleBack"
     />
   </template>
 
@@ -26,20 +26,20 @@
   </v-container>
 
   <CreateChatDialog
-    v-model="showCreateChatForm"
-    @chatCreated="addConversation"
-    @cancelCreation="cancelCreation"
+      v-model="showCreateChatForm"
+      @chatCreated="addConversation"
+      @cancelCreation="cancelCreation"
   />
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import socketClient from '../utils/socket';
+import { useUserStore } from '@/stores/user.js';
 import ConversationList from '@/components/ConversationList.vue';
 import ChatWindow from '@/components/ChatWindow.vue';
 import CreateChatDialog from '@/components/CreateChatDialog.vue';
 import MessageService from '@/service/MessageService';
-import { useUserStore } from '@/stores/user.js';
+import socketClient from '@/utils/socket.js';
 
 const userStore = useUserStore();
 const conversations = ref([]);
@@ -66,11 +66,11 @@ const loadMessages = async (conversationId) => {
     messages.value = await MessageService.getMessages(conversationId);
     activeConversationId.value = conversationId;
   } catch (error) {
+    toast.error('Error loading messages');
     console.error('Error loading messages:', error);
   }
 };
 
-// Handle chat selection
 const handleChatSelect = async (chat) => {
   selectedChat.value = chat;
   if (chat?._id) {
@@ -78,14 +78,12 @@ const handleChatSelect = async (chat) => {
   }
 };
 
-// Handle back button
 const handleBack = () => {
   selectedChat.value = null;
   activeConversationId.value = null;
   messages.value = [];
 };
 
-// Handle typing status
 let typingTimeout;
 const handleTyping = () => {
   if (!selectedChat.value) return;
@@ -98,13 +96,12 @@ const handleTyping = () => {
   }, 1000);
 };
 
-// Add new conversation
 const addConversation = (newChat) => {
   const exists = conversations.value.some(chat =>
-    chat.participants.length === newChat.participants.length &&
-    chat.participants.every(p1 =>
-      newChat.participants.some(p2 => p1._id === p2._id)
-    )
+      chat.participants.length === newChat.participants.length &&
+      chat.participants.every(p1 =>
+          newChat.participants.some(p2 => p1._id === p2._id)
+      )
   );
 
   if (!exists) {
@@ -113,10 +110,10 @@ const addConversation = (newChat) => {
     selectedChat.value = newChat;
   } else {
     selectedChat.value = conversations.value.find(chat =>
-      chat.participants.length === newChat.participants.length &&
-      chat.participants.every(p1 =>
-        newChat.participants.some(p2 => p1._id === p2._id)
-      )
+        chat.participants.length === newChat.participants.length &&
+        chat.participants.every(p1 =>
+            newChat.participants.some(p2 => p1._id === p2._id)
+        )
     );
   }
 };
@@ -125,7 +122,6 @@ const cancelCreation = () => {
   showCreateChatForm.value = false;
 };
 
-// Initialize socket event handlers
 const setupSocketListeners = () => {
   socketClient.socket?.on('new_message', ({ conversationId, message }) => {
     // Add message if it's for the current conversation
@@ -169,24 +165,19 @@ const setupSocketListeners = () => {
   });
 };
 
-// Load initial data and setup
 const initialize = async () => {
   try {
     conversations.value = await MessageService.getConversations(userStore.userId);
   } catch (error) {
-    toast.error('Error loading conversations');
     console.error('Error loading conversations:', error);
   }
 };
 
 onMounted(async () => {
-  // Connect socket
   await socketClient.connect();
 
-  // Setup socket listeners
   setupSocketListeners();
 
-  // Load initial data
   await initialize();
 });
 

@@ -42,66 +42,17 @@ class ForumService {
         }
     }
 
-
-    connect(token) {
-        this.socket = new WebSocket('ws://localhost:4000');
-
-        this.socket.addEventListener('open', () => {
-            console.log('WebSocket connected');
-            this.socket.send(JSON.stringify({ type: 'connect', payload: { token:  token } }));
-        });
-
-        this.socket.addEventListener('message', (event) => {
-            try {
-                console.log("event data",event.data);
-                const message = JSON.parse(event.data);
-                console.log(message);
-
-
-                if (message.type === 'newMessage' && message.payload.forumId === this.selectedForumId) {
-                    this.emit('newMessage', message.payload);
-                }
-
-            } catch (error) {
-                console.error("Failed to parse message or invalid message format:", error);
-            }
-        });
-
-    }
-
-
-    joinForum(forumId) {
-        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-            this.socket.send(JSON.stringify({ type: 'joinForum', payload: forumId }));
-            this.selectedForumId = forumId;
-        } else {
-            console.error("WebSocket not connected. Cannot join forum.");
-        }
-    }
-
-    leaveForum() {
-        if (this.socket && this.socket.readyState === WebSocket.OPEN && this.selectedForumId) {
-            this.socket.send(JSON.stringify({ type: 'leaveForum', payload: this.selectedForumId }));
-            this.selectedForumId = null;
-        }
-    }
-
-    postMessage(forumId, message) {
+    async sendMessage(forumId, message) {
         console.log("post message");
 
-        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-            console.error("WebSocket not connected. Cannot send message.");
-            return;
-        }
-
         try {
-            this.socket.send(JSON.stringify({
-                type: 'newMessage',
-                payload: { forumId, text: message }
-            }));
-            console.log("message sent");
+            const token = AuthService.getToken();
+            const userId = AuthService.getCurrentUser();
+            const response = await axios.post(`${this.API_URL}/forum/${forumId}/message`, {user: userId, text: message},{headers: {Authorization: `Bearer ${token}`},});
+            return response.data;
         } catch (error) {
-            console.error("Error sending message over WebSocket:", error);
+            console.error('Error sending message:', error);
+            throw error;
         }
 
     }
