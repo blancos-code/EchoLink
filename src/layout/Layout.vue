@@ -71,6 +71,7 @@
   </v-app>
 </template>
 <script setup>
+  const user = ref(JSON.parse(localStorage.getItem('user')));
   import AuthService from "@/service/AuthService.js";
 import {ref} from "vue";
   import {router} from "@/router/router.js";
