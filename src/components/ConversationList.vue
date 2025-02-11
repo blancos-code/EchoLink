@@ -5,6 +5,7 @@
       <v-toolbar-title>Messages</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon="mdi-square-edit-outline" @click="createChat()"></v-btn>
+      <v-btn icon="mdi-square-edit-outline" @click="createChat()"></v-btn>
     </v-toolbar>
 
     <!-- Search -->
