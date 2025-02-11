@@ -9,7 +9,7 @@
         <v-img :src="selectedChat?.avatar" alt="User avatar"></v-img>
       </v-avatar>
       <div>
-        <div class="font-weight-bold">{{ selectedChat?.name }}</div>
+        <div class="font-weight-bold">{{ selectedChat != null ? selectedChat?.name : selectedForum != null ? selectedForum?.titre : ''}}</div>
         <div class="caption text-grey">Active now</div>
       </div>
       <v-spacer></v-spacer>
@@ -26,12 +26,12 @@
 
     <!-- Chat Messages -->
     <v-card class="chat-content" flat ref="messagesContainer">
-      <v-card-text class="messages-container">
+      <v-card-text  class="messages-container">
         <template v-for="(message, index) in messageHistory" :key="index">
-          <div :class="['message-wrapper', message.sender == userId ? 'sent' : 'received']">
-            <v-card :color="message.sender == userId ? 'primary' : 'grey lighten-3'"
-              :class="['message-bubble', message.sender == userId ? 'sent' : 'received']" rounded="lg">
-              <v-card-text :class="['pa-2', message.sender == userId ? 'white--text' : '']">
+          <div :class="['message-wrapper', message.user === userId ? 'sent' : 'received']">
+            <v-card :color="message.user === userId ? 'primary' : 'grey lighten-3'"
+                    :class="['message-bubble', message.user === userId ? 'sent' : 'received']" rounded="lg">
+              <v-card-text :class="['pa-2', message.user === userId ? 'white--text' : '']">
                 {{ message.text }}
               </v-card-text>
             </v-card>
@@ -53,8 +53,8 @@
           <v-col>
             <!-- Replacing v-text-field with v-textarea -->
             <v-textarea v-model="newMessage" placeholder="Message..." rounded filled dense hide-details
-              @keypress.enter="sendMessage" auto-grow rows="1" variant="outlined">
-              <template v-slot:append-outer>
+                         auto-grow rows="1" variant="outlined">
+              <template v-slot:append>
                 <v-btn v-if="!newMessage" icon class="ml-0">
                   <v-icon>mdi-microphone</v-icon>
                 </v-btn>
@@ -71,18 +71,20 @@
 </template>
 
 <script setup>
-import { formatDate } from "../utils/date";
+import { formatDate } from "@/utils/date";
 
 </script>
 
 <script>
 import "@/assets/css/components/chatWindow.css";
-import MessageService from "../service/MessageService";
+import MessageService from "@/service/MessageService";
+import ForumService from "@/service/ForumService.js";
 
 export default {
-  name: 'InstagramChat',
+  name: 'Chat',
   props: {
     selectedChat: Object,
+    selectedForum: Object,
     messageHistory: Array,
     userId: String,
   },
@@ -91,20 +93,34 @@ export default {
   }),
   methods: {
     async sendMessage() {
-      if (!this.newMessage.trim() || !this.selectedChat) return;
-
-      try {
-        const newSavedMessage = await MessageService.sendMessage({
-          conversationId: this.selectedChat._id,
-          text: this.newMessage
-        });
-
-        this.messageHistory.push(newSavedMessage);
-
-      } catch (error) {
-        console.error('Erreur lors de l\'envoie du message:', error);
+      if (!this.newMessage.trim()) return;
+      if(this.selectedChat != null){
+        try {
+          await MessageService.sendMessage({
+            conversationId: this.selectedChat._id,
+            text: this.newMessage
+          });
+          this.newMessage = '';
+        } catch (error) {
+          console.error('Erreur lors de l\'envoi du message dans la conversation:', error);
+        }
       }
-      this.newMessage = '';
+      if(this.selectedForum != null){
+        try {
+          await ForumService.sendMessage({
+            forumId: this.selectedForum._id,
+            text: this.newMessage
+          })
+
+          this.newMessage = '';
+        } catch (error) {
+          console.error('Erreur lors de l\'envoi du message dans le forum:', error);
+        }
+
+      }
+
+
+
     },
     goBack() {
       this.$emit('back');
