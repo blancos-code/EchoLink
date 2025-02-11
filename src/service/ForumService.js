@@ -115,6 +115,7 @@ class ForumService {
 
 
     async postMessage(forumId, message) {
+        console.log("post message");
 
         if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
             console.error("WebSocket not connected. Cannot send message.");

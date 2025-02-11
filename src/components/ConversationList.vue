@@ -3,7 +3,7 @@
     <v-toolbar flat>
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn v-if="selectedForumId != null" icon="mdi-square-edit-outline" @click="$emit('create-chat')"></v-btn> </v-toolbar>
+      <v-btn v-if="title !== 'Forums'" icon="mdi-square-edit-outline" @click="$emit('create-chat')"></v-btn> </v-toolbar>
 
     <div class="pa-4">
       <v-text-field
@@ -52,6 +52,7 @@
         </template>
         <template v-slot:append>
           <span class="text-caption text-grey">
+           à {{forum.zone_geographique}}
           </span>
         </template>
       </v-list-item>
@@ -86,7 +87,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'chat-selected', 'create-chat']);
+const emit = defineEmits(['update:modelValue', 'chat-selected', 'create-chat', 'forum-selected']);
 
 
 const drawer = computed({

@@ -10,7 +10,7 @@
     <v-dialog v-model="showCreateThematiqueDialog" persistent width="500">
       <create-thematique-dialog @thematique-created="handleThematiqueCreated" @cancel="showCreateThematiqueDialog = false" />
     </v-dialog>
-    <div class="mb-2">
+    <div class="mb-2" v-if="selectedForum == null">
       <v-btn @click="showCreateForumDialog = true" class="mr-2">
         Créer un forum
       </v-btn>
@@ -19,7 +19,7 @@
       </v-btn>
     </div>
 
-<conversation-list v-model="drawer" title="Forums" :forums="forums" :selected-forum-id="selectedForum?.id" @chat-selected="handleForumSelect"/>
+<conversation-list v-model="drawer" title="Forums" :forums="forums" :selected-forum-id="selectedForum?.id" @forum-selected="handleForumSelect"/>
     <template v-if="selectedForum">
       <chat-window :selectedForum="selectedForum" @send-message="handleSendMessage" @back="handleBack" />
     </template>
@@ -38,6 +38,7 @@ import ForumService from '@/service/ForumService';
 import CreateForumDialog from '@/components/CreateForumDialog.vue';
 import CreateThematiqueDialog from "@/components/CreateThematiqueDialog.vue";
 import ConversationList from "@/components/ConversationList.vue";
+import ChatWindow from '@/components/ChatWindow.vue';
 const drawer = ref(true);
 const forums = ref([]);
 const thematiques = ref([]);
@@ -52,20 +53,22 @@ onMounted(async () => {
   forums.value = await ForumService.getAllForums();
 });
 
-const selectForum = async (forum) => {
+const handleForumSelect = async (forum) => {
   selectedForum.value = forum;
   ForumService.joinForum(forum.id); //join ws forum room
 };
 
-const sendMessage = () => {
-  if(newMessageText.value !== '' && selectedForum.value){
-    ForumService.postMessage(selectedForum.value.id, newMessageText.value);
-    newMessageText.value = '';
-  }
+const handleBack = () => {
+  selectedForum.value = null;
+  ForumService.joinForum(); //leave ws forum room
 };
 
-const handleNewMessage = async (newMessage) => {
- //todo
+const handleSendMessage = (newMessage) => {
+  console.log("handle send message", newMessage);
+  if(newMessage !== '' && selectedForum.value){
+    ForumService.postMessage(selectedForum.value.id,newMessage);
+    newMessageText.value = '';
+  }
 };
 
 const handleForumCreated = (newForum) => {

@@ -1,20 +1,20 @@
 <template>
-  <conversation-list 
-    v-model="drawer" 
-    :chats="conversations" 
+  <conversation-list
+    v-model="drawer"
+    :chats="conversations"
     :selected-chat-id="selectedChat?.id"
-    @chat-selected="handleChatSelect" 
-    @create-chat="showCreateChatForm = true" 
+    @chat-selected="handleChatSelect"
+    @create-chat="showCreateChatForm = true"
   />
 
   <template v-if="selectedChat">
-    <chat-window 
-      :selectedChat="selectedChat" 
-      :messageHistory="messages" 
-      :userId="userStore.userId" 
+    <chat-window
+      :selectedChat="selectedChat"
+      :messageHistory="messages"
+      :userId="userStore.userId"
       :typing-users="Array.from(typingUsers)"
       @typing="handleTyping"
-      @back="handleBack" 
+      @back="handleBack"
     />
   </template>
 
@@ -25,26 +25,23 @@
     </div>
   </v-container>
 
-  <CreateChatDialog 
-    v-model="showCreateChatForm" 
-    @chatCreated="addConversation" 
-    @cancelCreation="cancelCreation" 
+  <CreateChatDialog
+    v-model="showCreateChatForm"
+    @chatCreated="addConversation"
+    @cancelCreation="cancelCreation"
   />
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { useUserStore } from '../stores/user.js';
-import ConversationList from '../components/ConversationList.vue';
-import ChatWindow from '../components/ChatWindow.vue';
-import CreateChatDialog from '../components/CreateChatDialog.vue';
-import MessageService from '../service/MessageService';
 import socketClient from '../utils/socket';
-import { useToast } from 'vue-toastification'; // Assuming you're using this for notifications
+import ConversationList from '@/components/ConversationList.vue';
+import ChatWindow from '@/components/ChatWindow.vue';
+import CreateChatDialog from '@/components/CreateChatDialog.vue';
+import MessageService from '@/service/MessageService';
+import { useUserStore } from '@/stores/user.js';
 
-const toast = useToast();
 const userStore = useUserStore();
-const user = ref(JSON.parse(localStorage.getItem('user')));
 const conversations = ref([]);
 const drawer = ref(true);
 const selectedChat = ref(null);
@@ -69,7 +66,6 @@ const loadMessages = async (conversationId) => {
     messages.value = await MessageService.getMessages(conversationId);
     activeConversationId.value = conversationId;
   } catch (error) {
-    toast.error('Error loading messages');
     console.error('Error loading messages:', error);
   }
 };
@@ -93,9 +89,9 @@ const handleBack = () => {
 let typingTimeout;
 const handleTyping = () => {
   if (!selectedChat.value) return;
-  
+
   socketClient.socket?.emit('typing_start', selectedChat.value._id);
-  
+
   clearTimeout(typingTimeout);
   typingTimeout = setTimeout(() => {
     socketClient.socket?.emit('typing_end', selectedChat.value._id);
@@ -104,7 +100,7 @@ const handleTyping = () => {
 
 // Add new conversation
 const addConversation = (newChat) => {
-  const exists = conversations.value.some(chat => 
+  const exists = conversations.value.some(chat =>
     chat.participants.length === newChat.participants.length &&
     chat.participants.every(p1 =>
       newChat.participants.some(p2 => p1._id === p2._id)
@@ -186,10 +182,10 @@ const initialize = async () => {
 onMounted(async () => {
   // Connect socket
   await socketClient.connect();
-  
+
   // Setup socket listeners
   setupSocketListeners();
-  
+
   // Load initial data
   await initialize();
 });
