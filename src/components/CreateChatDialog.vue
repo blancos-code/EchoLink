@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, defineProps, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import MessageService from '../service/MessageService';
 import UserService from '../service/userService';
 
@@ -73,7 +73,7 @@ const createChat = async () => {
   }
   
   try {
-    const newChat = await MessageService.createChat({
+    const newChat = await MessageService.createConversation({
       name: newChatName.value,
       participantId: selectedUser.value.id,
     });

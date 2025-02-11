@@ -16,11 +16,11 @@
     <!-- Chat List -->
      <!-- :subtitle="chat.messages[chat.messages.length - 1]?.text"  -->
     <v-list lines="two">
-      <v-list-item v-for="chat in filteredChats" :key="chat.id" :title="chat.name"
+      <v-list-item v-for="chat in filteredChats" :key="chat._id" :title="chat.name"
         :active="selectedChatId === chat.id" @click="selectChat(chat)">
         <template v-slot:prepend>
           <v-avatar class="ma-1" size="48">
-            <v-img :src="chat.avatar"></v-img>
+            <v-img :src="chat.participants[1].image"></v-img>
           </v-avatar>
         </template>
         <template v-slot:append>

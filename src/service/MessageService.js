@@ -52,19 +52,19 @@ class MessageService {
     }
   }
 
-  async createChat({ name, participantId }) {
+  async createConversation({ name, participantId }) {
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
+      const userId = JSON.parse(localStorage.getItem('userId'));
       const response = await axios.post(`${this.API_URL}/conversations/create`, {
         name,
-        sender: user.id,
+        sender: userId,
         recipient: participantId
       });
 
       if (this.socket?.readyState === WebSocket.OPEN) {
         this.socket.send(JSON.stringify({
           type: 'new_conversation',
-          sender: user.id,
+          sender: userId,
           recipient: participantId,
           conversation: response.data
         }));

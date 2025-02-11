@@ -1,5 +1,5 @@
 <template>
-  <conversation-list v-model="drawer" :chats="chats" :selected-chat-id="selectedChat?.id"
+  <conversation-list v-model="drawer" :chats="conversations" :selected-chat-id="selectedChat?.id"
     @chat-selected="handleChatSelect" @create-chat="showCreateChatForm = true" />
 
   <template v-if="selectedChat">
@@ -12,12 +12,12 @@
     </div>
   </v-container>
 
-  <CreateChatDialog v-model="showCreateChatForm" @chatCreated="addChat" @cancelCreation="cancelCreation" />
+  <CreateChatDialog v-model="showCreateChatForm" @chatCreated="addConversation" @cancelCreation="cancelCreation" />
 </template>
 
 <script setup>
 import { watch } from 'vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import ConversationList from '../components/ConversationList.vue';
 import ChatWindow from '../components/ChatWindow.vue';
 import CreateChatDialog from '../components/CreateChatDialog.vue';
@@ -30,7 +30,6 @@ const user = ref(JSON.parse(localStorage.getItem('user')));
 const conversations = ref([]);
 const drawer = ref(true);
 const selectedChat = ref(null);
-const chats = ref([]);
 const showCreateChatForm = ref(false);
 const recipientId = ref(null);
 const newMessage = ref("");
@@ -55,8 +54,8 @@ const handleSendMessage = (message) => {
   newMessage.value = "";
 };
 
-const addChat = (newChat) => {
-  chats.value.push(newChat);
+const addConversation = (newChat) => {
+  conversations.value.push(newChat);
   showCreateChatForm.value = false;
 };
 
