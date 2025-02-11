@@ -31,6 +31,10 @@ class AuthService {
       if (response.data.token) {
         // Check if registration returns a token (adjust if needed)
         localStorage.setItem("user", JSON.stringify(response.data));
+        localStorage.setItem("token", response.data.token);
+
+        const userData = this.getUserData(response.data.token);
+        localStorage.setItem("userId", JSON.stringify(userData.id));
       }
       return response.data;
     } catch (error) {
@@ -45,6 +49,8 @@ class AuthService {
 
   logout() {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
   }
 
   getCurrentUser() {
