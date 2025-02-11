@@ -25,8 +25,8 @@
     </v-app-bar>
 
     <!-- Chat Messages -->
-    <v-card class="chat-content" flat>
-      <v-card-text class="messages-container" ref="messagesContainer">
+    <v-card class="chat-content" flat ref="messagesContainer">
+      <v-card-text class="messages-container">
         <template v-for="(message, index) in messageHistory" :key="index">
           <div :class="['message-wrapper', message.sender == userId ? 'sent' : 'received']">
             <v-card :color="message.sender == userId ? 'primary' : 'grey lighten-3'"
@@ -52,19 +52,8 @@
           </v-col>
           <v-col>
             <!-- Replacing v-text-field with v-textarea -->
-            <v-textarea
-              v-model="newMessage"
-              placeholder="Message..."
-              rounded
-              filled
-              dense
-              hide-details
-              @keypress.enter="sendMessage"
-              auto-grow
-              rows="1"
-              variant="outlined"
-              
-            >
+            <v-textarea v-model="newMessage" placeholder="Message..." rounded filled dense hide-details
+              @keypress.enter="sendMessage" auto-grow rows="1" variant="outlined">
               <template v-slot:append-outer>
                 <v-btn v-if="!newMessage" icon class="ml-0">
                   <v-icon>mdi-microphone</v-icon>
@@ -112,32 +101,14 @@ export default {
 
         this.messageHistory.push(newSavedMessage);
 
-        // emit('chatCreated', newChat);
-        // emit('update:modelValue', false);
       } catch (error) {
         console.error('Erreur lors de l\'envoie du message:', error);
       }
-
-
       this.newMessage = '';
-      this.$nextTick(() => {
-        this.scrollToBottom();
-      });
     },
-
-    scrollToBottom() {
-      const container = this.$refs.messagesContainer;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    },
-
     goBack() {
       this.$emit('back');
     },
-  },
-  mounted() {
-    this.scrollToBottom();
   },
 };
 </script>

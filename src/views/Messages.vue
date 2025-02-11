@@ -1,10 +1,23 @@
 <template>
-  <conversation-list v-model="drawer" :chats="conversations" :selected-chat-id="selectedChat?.id"
-    @chat-selected="handleChatSelect" @create-chat="showCreateChatForm = true" />
+  <conversation-list 
+    v-model="drawer" 
+    :chats="conversations" 
+    :selected-chat-id="selectedChat?.id"
+    @chat-selected="handleChatSelect" 
+    @create-chat="showCreateChatForm = true" 
+  />
 
   <template v-if="selectedChat">
-    <chat-window :selectedChat="selectedChat" :messageHistory="messages" :userId="userStore.userId" @send-message="handleSendMessage" @back="handleBack" />
+    <chat-window 
+      :selectedChat="selectedChat" 
+      :messageHistory="messages" 
+      :userId="userStore.userId" 
+      :typing-users="Array.from(typingUsers)"
+      @typing="handleTyping"
+      @back="handleBack" 
+    />
   </template>
+
   <v-container v-else class="d-flex align-center justify-center" fluid>
     <div class="text-center">
       <v-icon size="64" color="grey-lighten-1">mdi-message-outline</v-icon>
@@ -12,49 +25,84 @@
     </div>
   </v-container>
 
-  <CreateChatDialog v-model="showCreateChatForm" @chatCreated="addConversation" @cancelCreation="cancelCreation" />
+  <CreateChatDialog 
+    v-model="showCreateChatForm" 
+    @chatCreated="addConversation" 
+    @cancelCreation="cancelCreation" 
+  />
 </template>
 
 <script setup>
-import { watch } from 'vue';
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { useUserStore } from '../stores/user.js';
 import ConversationList from '../components/ConversationList.vue';
 import ChatWindow from '../components/ChatWindow.vue';
 import CreateChatDialog from '../components/CreateChatDialog.vue';
 import MessageService from '../service/MessageService';
-import { useUserStore } from '../stores/user.js';
+import socketClient from '../utils/socket';
+import { useToast } from 'vue-toastification'; // Assuming you're using this for notifications
 
+const toast = useToast();
 const userStore = useUserStore();
-
 const user = ref(JSON.parse(localStorage.getItem('user')));
 const conversations = ref([]);
 const drawer = ref(true);
 const selectedChat = ref(null);
 const showCreateChatForm = ref(false);
-const recipientId = ref(null);
-const newMessage = ref("");
-const activeConversationId = ref(null);
 const messages = ref([]);
+const typingUsers = ref(new Set());
+const activeConversationId = ref(null);
 
-const handleChatSelect = (chat) => {
-  selectedChat.value = chat;
-  loadMessages(chat._id);
+// Watch for selected chat changes
+watch(selectedChat, (newChat, oldChat) => {
+  if (oldChat?._id) {
+    socketClient.socket?.emit('leave_conversation', oldChat._id);
+  }
+  if (newChat?._id) {
+    socketClient.socket?.emit('join_conversation', newChat._id);
+  }
+});
+
+// Load messages for a conversation
+const loadMessages = async (conversationId) => {
+  try {
+    messages.value = await MessageService.getMessages(conversationId);
+    activeConversationId.value = conversationId;
+  } catch (error) {
+    toast.error('Error loading messages');
+    console.error('Error loading messages:', error);
+  }
 };
 
+// Handle chat selection
+const handleChatSelect = async (chat) => {
+  selectedChat.value = chat;
+  if (chat?._id) {
+    await loadMessages(chat._id);
+  }
+};
+
+// Handle back button
 const handleBack = () => {
   selectedChat.value = null;
+  activeConversationId.value = null;
+  messages.value = [];
 };
 
-const loadMessages = async (conversationId) => {
-  messages.value = await MessageService.getMessages(conversationId);
-  activeConversationId.value = conversationId;
+// Handle typing status
+let typingTimeout;
+const handleTyping = () => {
+  if (!selectedChat.value) return;
+  
+  socketClient.socket?.emit('typing_start', selectedChat.value._id);
+  
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    socketClient.socket?.emit('typing_end', selectedChat.value._id);
+  }, 1000);
 };
 
-const handleSendMessage = (message) => {
-  MessageService.sendMessage(user.value.id, recipientId.value, message);
-  newMessage.value = "";
-};
-
+// Add new conversation
 const addConversation = (newChat) => {
   const exists = conversations.value.some(chat => 
     chat.participants.length === newChat.participants.length &&
@@ -66,27 +114,96 @@ const addConversation = (newChat) => {
   if (!exists) {
     conversations.value.push(newChat);
     showCreateChatForm.value = false;
-  } else {
     selectedChat.value = newChat;
+  } else {
+    selectedChat.value = conversations.value.find(chat =>
+      chat.participants.length === newChat.participants.length &&
+      chat.participants.every(p1 =>
+        newChat.participants.some(p2 => p1._id === p2._id)
+      )
+    );
   }
 };
+
 const cancelCreation = () => {
   showCreateChatForm.value = false;
-}
+};
 
+// Initialize socket event handlers
+const setupSocketListeners = () => {
+  socketClient.socket?.on('new_message', ({ conversationId, message }) => {
+    // Add message if it's for the current conversation
+    if (conversationId === activeConversationId.value) {
+      const messageExists = messages.value.some(m => m._id === message._id);
+      if (!messageExists) {
+        messages.value.push(message);
+      }
+    }
 
-onMounted(async () => {
-  MessageService.connect(userStore.userId);
-
-  conversations.value = await MessageService.getConversations(userStore.userId);
-
-  MessageService.on('private_message', (message) => {
-    if (message.conversationId === activeConversationId.value) {
-      messages.value.push({
-        sender: message.sender,
-        text: message.text
-      });
+    // Update last message in conversation list
+    const conversation = conversations.value.find(c => c._id === conversationId);
+    if (conversation) {
+      conversation.lastMessage = message;
     }
   });
+
+  socketClient.socket?.on('new_conversation', (conversation) => {
+    addConversation(conversation);
+  });
+
+  socketClient.socket?.on('user_typing', ({ userId, conversationId }) => {
+    if (conversationId === selectedChat.value?._id) {
+      typingUsers.value.add(userId);
+    }
+  });
+
+  socketClient.socket?.on('user_stop_typing', ({ userId, conversationId }) => {
+    if (conversationId === selectedChat.value?._id) {
+      typingUsers.value.delete(userId);
+    }
+  });
+
+  socketClient.socket?.on('user_status_change', ({ userId, status }) => {
+    conversations.value.forEach(conv => {
+      const participant = conv.participants.find(p => p._id === userId);
+      if (participant) {
+        participant.status = status;
+      }
+    });
+  });
+};
+
+// Load initial data and setup
+const initialize = async () => {
+  try {
+    conversations.value = await MessageService.getConversations(userStore.userId);
+  } catch (error) {
+    toast.error('Error loading conversations');
+    console.error('Error loading conversations:', error);
+  }
+};
+
+onMounted(async () => {
+  // Connect socket
+  await socketClient.connect();
+  
+  // Setup socket listeners
+  setupSocketListeners();
+  
+  // Load initial data
+  await initialize();
+});
+
+onBeforeUnmount(() => {
+  // Cleanup
+  if (socketClient.socket) {
+    socketClient.socket.off('new_message');
+    socketClient.socket.off('new_conversation');
+    socketClient.socket.off('user_typing');
+    socketClient.socket.off('user_stop_typing');
+    socketClient.socket.off('user_status_change');
+  }
+  socketClient.disconnect();
+  clearTimeout(typingTimeout);
 });
 </script>

@@ -14,7 +14,7 @@
     </div>
 
     <!-- Chat List -->
-     <!-- :subtitle="chat.messages[chat.messages.length - 1]?.text"  -->
+     <!-- :subtitle="chat.messages[chat.messages.length - 1]?.text" OU prendre du lastMessage de la BDD  -->
     <v-list lines="two">
       <v-list-item v-for="chat in filteredChats" :key="chat._id" :title="chat.name"
         :active="selectedChatId === chat.id" @click="selectChat(chat)">

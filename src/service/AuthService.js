@@ -9,6 +9,8 @@ class AuthService {
       const response = await axios.post(`${API_URL}/login`, user);
       if (response.data.token) {
         localStorage.setItem("user", JSON.stringify(response.data));
+        localStorage.setItem("token", response.data.token);
+
         const userData = this.getUserData(response.data.token);
         localStorage.setItem("userId", JSON.stringify(userData.id));
       }
