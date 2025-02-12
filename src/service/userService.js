@@ -33,6 +33,22 @@ class UserService {
       }
     }
   }
+
+  async updateUser(userId, userData){
+    try {
+      const token = AuthService.getToken();
+      const response = await axios.put(`${API_URL}/${userId}`, userData, {headers: {Authorization: `Bearer ${token}`},});
+      console.log("response data ",response.data);
+      return response.data;
+    }catch (error){
+      console.error("updateUser error:", error);
+      if (error.response && error.response.data && error.response.data.errors) {
+        throw error.response.data.errors;
+      } else {
+        throw new Error("An error occurred during update user.");
+      }
+    }
+  }
 }
 
 export default new UserService();

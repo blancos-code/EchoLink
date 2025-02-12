@@ -1,4 +1,4 @@
-import {createMemoryHistory, createRouter, createWebHistory} from 'vue-router'
+import { createRouter, createWebHistory} from 'vue-router'
 import Layout from '@/layout/Layout.vue'
 import Map from '@/views/Map.vue'
 import Messages from '@/views/Messages.vue'
@@ -7,6 +7,7 @@ import Classement from "@/views/Classement.vue";
 import LoginScreen from "@/components/LoginScreen.vue";
 import RegisterScreen from "@/components/RegisterScreen.vue";
 import AuthService from "@/service/AuthService.js";
+import Profile from "@/views/Profile.vue";
 
 const routes = [
     {
@@ -37,6 +38,12 @@ const routes = [
                 component: Classement,
                 meta: { requiresAuth: true }
             },
+            {
+                path: '/profile',
+                name: 'profile',
+                component: Profile,
+                meta: {requiresAuth: true}
+            }
 
         ]
     },
