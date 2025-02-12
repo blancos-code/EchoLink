@@ -8,7 +8,6 @@ class AuthService {
     try {
       const response = await axios.post(`${API_URL}/login`, user);
       if (response.data.token) {
-        console.log("TOKEN", response.data.token);
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data));
 
@@ -60,6 +59,10 @@ class AuthService {
 
   getCurrentUser() {
     return JSON.parse(localStorage.getItem("user"));
+  }
+
+  getCurrentUserId() {
+    return JSON.parse(localStorage.getItem("userId"));
   }
 
   getUserData(token) {
