@@ -38,7 +38,7 @@
           Créer
         </v-btn>
 
-        <v-btn @click="emit('cancel')">Annuler</v-btn>
+        <v-btn @click="$emit('cancel')">Annuler</v-btn>
 
       </v-form>
     </v-card-text>
@@ -49,8 +49,6 @@
 import { ref, onMounted } from 'vue';
 import ForumService from '../service/ForumService';
 import ThematiqueService from "@/service/ThematiqueService";
-
-const emit = defineEmits(['forum-created', 'cancel']);
 
 const titre = ref('');
 const thematique = ref(null);
@@ -78,10 +76,10 @@ const createForum = async () => {
       thematique: thematique.value,
       zone_geographique: zone_geographique.value
     });
-    emit('forum-created', newForum); // Emit the new forum data
+    $emit('forum-created', newForum);
 
 
-    // Reset form fields (optional)
+    // Reset form fields
     titre.value = '';
     thematique.value = null;
     zone_geographique.value = '';
@@ -89,7 +87,6 @@ const createForum = async () => {
 
   } catch (error) {
     console.error('Error creating forum:', error);
-    // Handle error, display message to user, etc.
   }
 
 };

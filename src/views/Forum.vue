@@ -5,11 +5,12 @@
     title="Forums"
     :forums="forums"
     :selected-forum-id="selectedForum?.id"
+    :userId="userId"
     @forum-selected="handleForumSelect"
     @create-chat="showCreateForumDialog = true"
     @create-thematique="showCreateThematiqueDialog = true"/>
     <template v-if="selectedForum">
-      <chat-window :selectedForum="selectedForum" :messageHistory="messages" @back="handleBack" />
+      <chat-window :selectedForum="selectedForum" :messageHistory="messages"  :userId="userId" @back="handleBack" />
     </template>
     <v-container v-else class="d-flex align-center justify-center" fluid>
       <div class="text-center">
@@ -45,8 +46,9 @@ import ChatWindow from '@/components/ChatWindow.vue';
 import CreateForumDialog from "@/components/CreateForumDialog.vue";
 import CreateThematiqueDialog from "@/components/CreateThematiqueDialog.vue";
 import socketClient from "@/utils/socket.js";
+import UserService from "@/service/userService.js";
 
-
+const userId = ref('');
 const forums = ref([]);
 const drawer = ref(true);
 const selectedForum = ref(null);
@@ -54,15 +56,15 @@ const showCreateForumDialog = ref(false);
 const showCreateThematiqueDialog = ref(false);
 const messages = ref([]);
 const activeForumId = ref(null);
-
+const userNames = ref(new Map());
 
 // Watch for selected forum changes
 watch(selectedForum, (newForum, oldForum) => {
   if (oldForum?._id) {
-    socketClient.socket?.emit('leave_conversation', oldForum._id);
+    socketClient.socket?.emit('leave_forum', oldForum._id);
   }
   if (newForum?._id) {
-    socketClient.socket?.emit('join_conversation', newForum._id);
+    socketClient.socket?.emit('join_forum', newForum._id);
   }
 });
 
@@ -70,6 +72,19 @@ watch(selectedForum, (newForum, oldForum) => {
 const loadMessages = async (forumId) => {
   try {
     messages.value = await ForumService.getForumMessages(forumId);
+    // Fetch user names for each message
+    messages.value = await Promise.all(messages.value.map(async (m) => {
+      let userName;
+      if (userNames.value.has(m.user)) {
+        userName = userNames.value.get(m.user);
+      } else {
+        const userResponse = await UserService.getUserById(m.user);
+        userName= `${userResponse.prenom} ${userResponse.nom}`;
+        userNames.value.set(m.user, userName);
+      }
+      m.userName = userName;
+      return m;
+    }));
     activeForumId.value = forumId;
   } catch (error) {
     console.error('Error loading messages:', error);
@@ -89,19 +104,6 @@ const handleBack = () => {
   messages.value = [];
 };
 
-//let typingTimeout;
-
-/*const handleTyping = () => {
-  if (!selectedForum.value) return;
-
-  socketClient.socket?.emit('typing_start', selectedForum.value._id);
-
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(() => {
-    socketClient.socket?.emit('typing_end', selectedForum.value._id);
-  }, 1000);
-};*/
-
 const setupSocketListeners = () => {
   socketClient.socket?.on('new_message', ({ forumId, message }) => {
     // Add message if it's for the current conversation
@@ -119,31 +121,8 @@ const setupSocketListeners = () => {
     }
   });
 
-  //todo new forum
-  /*socketClient.socket?.on('new_conversation', (conversation) => {
-    addConversation(conversation);
-  });*/
+  //todo warn user when a new forum is created
 
-  /*socketClient.socket?.on('user_typing', ({ userId, conversationId }) => {
-    if (conversationId === selectedChat.value?._id) {
-      typingUsers.value.add(userId);
-    }
-  });*/
-
-/*  socketClient.socket?.on('user_stop_typing', ({ userId, conversationId }) => {
-    if (conversationId === selectedChat.value?._id) {
-      typingUsers.value.delete(userId);
-    }
-  });*/
-
-/*  socketClient.socket?.on('user_status_change', ({ userId, status }) => {
-    conversations.value.forEach(conv => {
-      const participant = conv.participants.find(p => p._id === userId);
-      if (participant) {
-        participant.status = status;
-      }
-    });
-  });*/
 };
 
 const initialize = async () => {
@@ -155,6 +134,7 @@ const initialize = async () => {
 };
 
 onMounted(async () => {
+  userId.value = JSON.parse(localStorage.getItem('userId'));
   await socketClient.connect();
 
   setupSocketListeners();
@@ -177,7 +157,6 @@ onBeforeUnmount(() => {
     socketClient.socket.off('user_status_change');
   }
   socketClient.disconnect();
- // clearTimeout(typingTimeout);
 });
 
 

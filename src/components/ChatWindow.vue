@@ -35,7 +35,7 @@
                 {{ message.text }}
               </v-card-text>
             </v-card>
-            <div class="caption text-grey message-time">{{ formatDate(message.createdAt) }}</div>
+            <div class="caption text-grey message-time">{{ (message.forum != null && message.user !== userId) ? `${ message.userName} - ` : '' }}{{formatDate(message.date)}} </div>
           </div>
         </template>
       </v-card-text>
@@ -70,16 +70,11 @@
   </v-container>
 </template>
 
-<script setup>
-import { formatDate } from "@/utils/date";
-
-</script>
-
 <script>
 import "@/assets/css/components/chatWindow.css";
 import MessageService from "@/service/MessageService";
 import ForumService from "@/service/ForumService.js";
-
+import { formatDate } from "@/utils/date";
 export default {
   name: 'Chat',
   props: {
@@ -92,6 +87,7 @@ export default {
     newMessage: '',
   }),
   methods: {
+    formatDate,
     async sendMessage() {
       if (!this.newMessage.trim()) return;
       if(this.selectedChat != null){
@@ -107,10 +103,10 @@ export default {
       }
       if(this.selectedForum != null){
         try {
-          await ForumService.sendMessage({
-            forumId: this.selectedForum._id,
-            text: this.newMessage
-          })
+          await ForumService.sendMessage(
+            this.selectedForum._id,
+            this.newMessage
+          )
 
           this.newMessage = '';
         } catch (error) {
@@ -118,9 +114,6 @@ export default {
         }
 
       }
-
-
-
     },
     goBack() {
       this.$emit('back');

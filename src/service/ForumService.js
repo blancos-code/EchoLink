@@ -43,12 +43,10 @@ class ForumService {
     }
 
     async sendMessage(forumId, message) {
-        console.log("post message");
-
         try {
             const token = AuthService.getToken();
-            const userId = AuthService.getCurrentUser();
-            const response = await axios.post(`${this.API_URL}/forum/${forumId}/message`, {user: userId, text: message},{headers: {Authorization: `Bearer ${token}`},});
+            const userId = AuthService.getCurrentUserId();
+            const response = await axios.post(`${this.API_URL}/forum/${forumId}/message`, { user: userId, text: message},{headers: {Authorization: `Bearer ${token}`},});
             return response.data;
         } catch (error) {
             console.error('Error sending message:', error);
