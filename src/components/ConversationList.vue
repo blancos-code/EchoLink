@@ -5,7 +5,7 @@
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon="mdi-square-edit-outline" @click="createChat()"></v-btn>
-      <v-btn icon="mdi-table-edit" @click="createThematique()"></v-btn>
+      <v-btn v-if="isForum" icon="mdi-table-edit" @click="createThematique()"></v-btn>
     </v-toolbar>
 
     <!-- Search -->
@@ -73,7 +73,11 @@ export default {
     title: {
       type: String,
       default: 'Messages'
-    }
+    },
+    isForum: {
+      type: Boolean,
+      default: false
+    },
   },
 
   data() {

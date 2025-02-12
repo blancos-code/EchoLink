@@ -6,6 +6,7 @@
     :forums="forums"
     :selected-forum-id="selectedForum?.id"
     :userId="userId"
+    isForum="true"
     @forum-selected="handleForumSelect"
     @create-chat="showCreateForumDialog = true"
     @create-thematique="showCreateThematiqueDialog = true"/>
