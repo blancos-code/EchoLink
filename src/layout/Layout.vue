@@ -24,7 +24,7 @@
           <v-list-item
               @click="accessProfile"
               lines="two"
-              :prepend-avatar='user != null && user.image != null ? user.image : "https://randomuser.me/api/portraits/women/81.jpg"'
+              :prepend-avatar='user != null && user.image != null ? API_URL + user.image : "https://randomuser.me/api/portraits/women/81.jpg"'
               subtitle="En ligne"
               :title='user!= null ? `${user.prenom} ${user.nom}` : ""'
           >
@@ -77,7 +77,7 @@
   import {router} from "@/router/router.js";
   import UserService from "@/service/userService.js";
   const user = ref(null);
-
+  const API_URL = "http://localhost:4000";
   const routes = ref([
     {title: 'Carte des urgences', icon: 'mdi-map', name: 'map'},
     {title: 'Messages', icon: 'mdi-message', name: 'messages'},
