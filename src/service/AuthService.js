@@ -2,73 +2,53 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
 const API_URL = "http://localhost:4000/api/auth";
+const TOKEN_KEY = "token";
+const USER_KEY = "user";
+const USER_ID_KEY = "userId";
 
 class AuthService {
   async login(user) {
-    try {
-      const response = await axios.post(`${API_URL}/login`, user);
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data));
-
-        const userData = this.getUserData(response.data.token);
-        localStorage.setItem("userId", JSON.stringify(userData.id));
-      }
-      return response.data;
-    } catch (error) {
-      console.error("Login error:", error);
-      if (error.response && error.response.data && error.response.data.errors) {
-        throw error.response.data.errors;
-      } else {
-        throw new Error("An error occurred during login.");
-      }
-    }
-  }
-
-  getToken(){
-    return localStorage.getItem("token");
+    return this.authenticate(`${API_URL}/login`, user);
   }
 
   async register(user) {
-    try {
-      const response = await axios.post(`${API_URL}/register`, user);
-      if (response.data.token) {
-        // Check if registration returns a token (adjust if needed)
-        localStorage.setItem("user", JSON.stringify(response.data));
-        localStorage.setItem("token", response.data.token);
+    return this.authenticate(`${API_URL}/register`, user);
+  }
 
-        const userData = this.getUserData(response.data.token);
-        localStorage.setItem("userId", JSON.stringify(userData.id));
+  async authenticate(url, user) {
+    try {
+      const response = await axios.post(url, user);
+      if (response.data.token) {
+        this.storeUserData(response.data.token);
       }
       return response.data;
     } catch (error) {
-      console.error("Registration error:", error);
-      if (error.response && error.response.data && error.response.data.errors) {
-        throw error.response.data.errors; // Re-throw the detailed error messages for handling in the component
-      } else {
-        throw new Error("An error occurred during registration."); // Generic error for unexpected issues
-      }
+      console.error("Auth error:", error);
+      throw error.response?.data?.errors || new Error("An error occurred during authentication.");
     }
   }
 
-  logout() {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
+  storeUserData(token) {
+    localStorage.setItem(TOKEN_KEY, token);
+    const userData = this.getUserData(token);
+    localStorage.setItem(USER_ID_KEY, JSON.stringify(userData?.id || null));
   }
 
-  getCurrentUser() {
-    return JSON.parse(localStorage.getItem("user"));
+  logout() {
+    [TOKEN_KEY, USER_KEY, USER_ID_KEY].forEach((key) => localStorage.removeItem(key));
+  }
+
+  getToken() {
+    return localStorage.getItem(TOKEN_KEY);
   }
 
   getCurrentUserId() {
-    return JSON.parse(localStorage.getItem("userId"));
+    return JSON.parse(localStorage.getItem(USER_ID_KEY));
   }
 
   getUserData(token) {
     try {
-      const decoded = jwtDecode(token);
-      return decoded.user;
+      return jwtDecode(token)?.user || null;
     } catch (error) {
       console.error("Erreur de décodage :", error);
       return null;
@@ -76,7 +56,7 @@ class AuthService {
   }
 
   isAuthenticated() {
-    return !!localStorage.getItem("user");
+    return !!this.getToken();
   }
 }
 

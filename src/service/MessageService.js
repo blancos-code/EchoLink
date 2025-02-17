@@ -1,71 +1,56 @@
-import axios from 'axios';
-import AuthService from "@/service/AuthService.js";
-
-const apiClient = axios.create({
-  baseURL: 'http://localhost:4000/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+import apiService from "./ApiService";
+import AuthService from "./AuthService.js";
 
 class MessageService {
 
   async getConversations(userId) {
     try {
-      const token = AuthService.getToken();
-      const response = await apiClient.get(`/users/${userId}/conversations`, {headers: {Authorization: `Bearer ${token}`},});
+      const response = await apiService.get(`/users/${userId}/conversations`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching conversations:', error);
-      return [];
+      console.error("Erreur lors de la récupération des conversations :", error);
+      throw error;
     }
   }
 
   async getMessages(conversationId) {
     try {
-      const token = AuthService.getToken();
-      const response = await apiClient.get(`/conversations/${conversationId}/messages`, {headers: {Authorization: `Bearer ${token}`},});
+      const response = await apiService.get(`/conversations/${conversationId}/messages`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching messages:', error);
-      return [];
+      console.error("Erreur lors de la récupération des messages :", error);
+      throw error;
     }
   }
 
   async createConversation({ name, participantId }) {
     try {
-      const token = AuthService.getToken();
-      const userId = JSON.parse(localStorage.getItem('userId'));
-      const response = await apiClient.post(`/conversations`, {
+      const userId = AuthService.getCurrentUserId();
+      const response = await apiService.post(`/conversations`, {
         name,
         sender: userId,
-        recipient: participantId
-      }, {headers: {Authorization: `Bearer ${token}`},});
-
+        recipient: participantId,
+      });
       return response.data;
     } catch (error) {
-      console.error('Error creating chat:', error);
+      console.error("Erreur lors de la création de la conversation :", error);
       throw error;
     }
   }
 
   async sendMessage({ conversationId, text }) {
     try {
-      const token = AuthService.getToken();
-      const userId = JSON.parse(localStorage.getItem('user')).userId;
-
-      const response = await apiClient.post(`/conversations/${conversationId}`, {
+      const userId = AuthService.getCurrentUserId();
+      const response = await apiService.post(`/conversations/${conversationId}`, {
         user: userId,
-        text
-      }, {headers: {Authorization: `Bearer ${token}`},});
-
+        text,
+      });
       return response.data;
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Erreur lors de la création du message :", error);
       throw error;
     }
   }
-
 }
 
 export default new MessageService();

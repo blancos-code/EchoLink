@@ -53,7 +53,7 @@ const login = async () => {
     const response = await AuthService.login(user.value);
     console.log('Login successful:', response.data);
 
-    const token = AuthService.getCurrentUser()['token'];
+    const token = AuthService.getToken();
     const userData = AuthService.getUserData(token);
     userStore.setUser(userData);
 

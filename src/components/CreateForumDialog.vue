@@ -47,6 +47,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+const emit = defineEmits(['forum-created']);
 import ForumService from '../service/ForumService';
 import ThematiqueService from "@/service/ThematiqueService";
 
@@ -76,8 +77,7 @@ const createForum = async () => {
       thematique: thematique.value,
       zone_geographique: zone_geographique.value
     });
-    $emit('forum-created', newForum);
-
+    emit('forum-created', newForum);
 
     // Reset form fields
     titre.value = '';

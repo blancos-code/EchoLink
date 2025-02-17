@@ -1,35 +1,39 @@
-import axios from 'axios';
-import AuthService from "@/service/AuthService.js";
+import apiService from "./ApiService";
 
 class ThematiqueService {
     constructor() {
-        this.API_URL = 'http://localhost:4000/api/thematiques';
+        this.API_URL = "/thematiques";
     }
 
     async getAllThematiques() {
         try {
-            const token = AuthService.getToken();
-            const response = await axios.get(`${this.API_URL}/thematique`, {headers: {Authorization: `Bearer ${token}`},},);
-
+            const response = await apiService.get(this.API_URL);
             return response.data;
         } catch (error) {
-            console.error("Error getting thematiques:", error);
+            console.error("Erreur lors de la récupération des thématiques :", error);
             return [];
         }
     }
 
-    createThematique(thematiqueData) {
-        const token = AuthService.getToken();
-        console.log(token);
-        return axios.post(`${this.API_URL}/thematique`, thematiqueData, {headers: {Authorization: `Bearer ${token}`},});
+    async createThematique(thematiqueData) {
+        try {
+            const response = await apiService.post(this.API_URL, thematiqueData);
+            return response.data;
+        } catch (error) {
+            console.error("Erreur lors de la création de la thématique :", error);
+            throw error;
+        }
     }
 
-    deleteThematique(thematiqueId) {
-        const token = AuthService.getToken();
-        return axios.delete(`${this.API_URL}/thematique/${thematiqueId}`, {headers: {Authorization: `Bearer ${token}`},});
+    async deleteThematique(thematiqueId) {
+        try {
+            const response = await apiService.delete(`${this.API_URL}/${thematiqueId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Erreur lors de la suppression de la thématique :", error);
+            throw error;
+        }
     }
-
-
 }
 
 export default new ThematiqueService();
