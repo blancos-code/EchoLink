@@ -4,8 +4,7 @@ import Map from '@/views/Map.vue'
 import Messages from '@/views/Messages.vue'
 import Forum from '@/views/Forum.vue'
 import Classement from "@/views/Classement.vue";
-import LoginScreen from "@/components/LoginScreen.vue";
-import RegisterScreen from "@/components/RegisterScreen.vue";
+import Auth from "@/views/Auth.vue";
 import AuthService from "@/service/AuthService.js";
 import Profile from "@/views/Profile.vue";
 
@@ -48,14 +47,9 @@ const routes = [
         ]
     },
     {
-        path: '/login',
-        name: 'login',
-        component: LoginScreen
-    },
-    {
-        path: '/register',
-        name: 'register',
-        component: RegisterScreen
+        path: '/auth',
+        name: 'auth',
+        component: Auth
     },
 ]
 
@@ -72,10 +66,10 @@ router.beforeEach(async (to, from, next) => { // Make beforeEach async
     console.log("is logged", isLoggedIn);
 
     if (!isLoggedIn) {
-        if (to.name === 'login' || to.name === 'register') {
+        if (to.name === 'auth') {
             next();
         } else {
-            next('/login');
+            next('/auth');
             return;
         }
     }

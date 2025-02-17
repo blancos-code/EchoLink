@@ -98,7 +98,7 @@
   }
   const logout = () =>{
     AuthService.logout();
-    router.push('/login');
+    router.push('/auth');
   };
 
   const accessProfile = () => {

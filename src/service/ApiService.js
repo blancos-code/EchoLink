@@ -26,7 +26,7 @@ apiService.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       console.warn("Token invalide ou expiré, déconnexion...");
       AuthService.logout();
-      router.push("/login");
+      router.push("/auth");
     }
     return Promise.reject(error);
   }

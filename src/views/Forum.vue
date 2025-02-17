@@ -1,17 +1,10 @@
 <template>
   <div>
-<conversation-list
-    v-model="drawer"
-    title="Forums"
-    :forums="forums"
-    :selected-forum-id="selectedForum?.id"
-    :userId="userId"
-    isForum="true"
-    @forum-selected="handleForumSelect"
-    @create-chat="showCreateForumDialog = true"
-    @create-thematique="showCreateThematiqueDialog = true"/>
+    <conversation-list v-model="drawer" title="Forums" :forums="forums" :selected-forum-id="selectedForum?.id"
+      :userId="userId" isForum="true" @forum-selected="handleForumSelect" @create-chat="showCreateForumDialog = true"
+      @create-thematique="showCreateThematiqueDialog = true" />
     <template v-if="selectedForum">
-      <chat-window :selectedForum="selectedForum" :messageHistory="messages"  :userId="userId" @back="handleBack" />
+      <chat-window :selectedForum="selectedForum" :messageHistory="messages" :userId="userId" @back="handleBack" />
     </template>
     <v-container v-else class="d-flex align-center justify-center" fluid>
       <div class="text-center">
@@ -22,25 +15,17 @@
   </div>
 
 
-  <v-dialog
-      v-model="showCreateForumDialog"
-      persistent
-      width="500"
-  >
+  <v-dialog v-model="showCreateForumDialog" persistent width="500">
     <create-forum-dialog @forum-created="handleForumCreated" @cancel="showCreateForumDialog = false" />
   </v-dialog>
 
-  <v-dialog
-      v-model="showCreateThematiqueDialog"
-      persistent
-      width="500"
-  >
+  <v-dialog v-model="showCreateThematiqueDialog" persistent width="500">
     <create-thematique-dialog @thematique-created="handleForumCreated" @cancel="showCreateThematiqueDialog = false" />
   </v-dialog>
 </template>
 
 <script setup>
-import {ref, onMounted, watch, onBeforeUnmount} from 'vue';
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
 import ForumService from '@/service/ForumService';
 import ConversationList from "@/components/ConversationList.vue";
 import ChatWindow from '@/components/ChatWindow.vue';
@@ -80,7 +65,7 @@ const loadMessages = async (forumId) => {
         userName = userNames.value.get(m.user);
       } else {
         const userResponse = await UserService.getUserById(m.user);
-        userName= `${userResponse.prenom} ${userResponse.nom}`;
+        userName = `${userResponse.prenom} ${userResponse.nom}`;
         userNames.value.set(m.user, userName);
       }
       m.userName = userName;

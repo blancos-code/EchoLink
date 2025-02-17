@@ -1,10 +1,7 @@
 <template>
   <v-row>
     <v-col cols="4">
-      <v-card
-          class="pr-5 mb-5 bg-white"
-          variant="outlined"
-      >
+      <v-card class="pr-5 mb-5 bg-white" variant="outlined">
         <v-card-title>
           Légende
         </v-card-title>
@@ -25,27 +22,19 @@
           </v-card-text>
         </v-card-item>
       </v-card>
-      <v-card
-          class="bg-white"
-          variant="outlined"
-      >
+      <v-card class="bg-white" variant="outlined">
         <v-card-title>
           Actions
         </v-card-title>
         <v-card-actions>
-          <v-btn
-              color="error"
-              class="ml-2"
-              variant="outlined"
-              prepend-icon="mdi-alert-outline"
-          >
+          <v-btn color="error" class="ml-2" variant="outlined" prepend-icon="mdi-alert-outline">
             Signaler une urgence
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
     <v-col>
-      <LeafletMap/>
+      <LeafletMap />
     </v-col>
   </v-row>
 </template>

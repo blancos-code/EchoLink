@@ -1,21 +1,10 @@
 <template>
-  <conversation-list
-      v-model="drawer"
-      :chats="conversations"
-      :selected-chat-id="selectedChat?.id"
-      @chat-selected="handleChatSelect"
-      @create-chat="showCreateChatForm = true"
-  />
+  <conversation-list v-model="drawer" :chats="conversations" :selected-chat-id="selectedChat?.id"
+    @chat-selected="handleChatSelect" @create-chat="showCreateChatForm = true" />
 
   <template v-if="selectedChat">
-    <chat-window
-        :selectedChat="selectedChat"
-        :messageHistory="messages"
-        :userId="userStore.userId"
-        :typing-users="Array.from(typingUsers)"
-        @typing="handleTyping"
-        @back="handleBack"
-    />
+    <chat-window :selectedChat="selectedChat" :messageHistory="messages" :userId="userStore.userId"
+      :typing-users="Array.from(typingUsers)" @typing="handleTyping" @back="handleBack" />
   </template>
 
   <v-container v-else class="d-flex align-center justify-center" fluid>
@@ -25,11 +14,7 @@
     </div>
   </v-container>
 
-  <CreateChatDialog
-      v-model="showCreateChatForm"
-      @chatCreated="addConversation"
-      @cancelCreation="cancelCreation"
-  />
+  <CreateChatDialog v-model="showCreateChatForm" @chatCreated="addConversation" @cancelCreation="cancelCreation" />
 </template>
 
 <script setup>
@@ -98,10 +83,10 @@ const handleTyping = () => {
 
 const addConversation = (newChat) => {
   const exists = conversations.value.some(chat =>
-      chat.participants.length === newChat.participants.length &&
-      chat.participants.every(p1 =>
-          newChat.participants.some(p2 => p1._id === p2._id)
-      )
+    chat.participants.length === newChat.participants.length &&
+    chat.participants.every(p1 =>
+      newChat.participants.some(p2 => p1._id === p2._id)
+    )
   );
 
   if (!exists) {
@@ -110,10 +95,10 @@ const addConversation = (newChat) => {
     selectedChat.value = newChat;
   } else {
     selectedChat.value = conversations.value.find(chat =>
-        chat.participants.length === newChat.participants.length &&
-        chat.participants.every(p1 =>
-            newChat.participants.some(p2 => p1._id === p2._id)
-        )
+      chat.participants.length === newChat.participants.length &&
+      chat.participants.every(p1 =>
+        newChat.participants.some(p2 => p1._id === p2._id)
+      )
     );
   }
 };
