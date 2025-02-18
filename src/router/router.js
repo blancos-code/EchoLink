@@ -73,7 +73,7 @@ router.beforeEach(async (to, from, next) => { // Make beforeEach async
             return;
         }
     }
-    if (to.path === '/' && isLoggedIn) {
+    if ((to.path === '/' || to.path === '/auth') && isLoggedIn) {
         next('/map');
         return;
     }

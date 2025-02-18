@@ -135,18 +135,18 @@ const passwordConfirmationRule = computed(() => {
   return v => v === registerData.value.password || 'Les mots de passes doivent être équivalent'
 });
 
-const handleLogin = async (credentials = null) => {
-  // If credentials are provided, use them. Otherwise use loginData
-  const loginCredentials = credentials || loginData.value;
-  
-  const { valid } = credentials ? true : await loginForm.value.validate();
+const handleLogin = async () => {
+  const { valid } = await loginForm.value.validate();
   if (!valid) return;
 
   isLoading.value = true;
   loginError.value = '';
 
   try {
-    const response = await AuthService.login(loginCredentials);
+    const response = await AuthService.login({
+      email: loginData.value.email,
+      password: loginData.value.password
+    });
     const token = AuthService.getToken();
     const userData = AuthService.getUserData(token);
     userStore.setUser(userData);
@@ -174,14 +174,10 @@ const handleRegister = async () => {
       password: registerData.value.password
     });
 
-    // Create credentials object for login
-    const credentials = {
-      email: registerData.value.email,
-      password: registerData.value.password
-    };
-
-    // Call handleLogin with the credentials
-    await handleLogin(credentials);
+    const token = AuthService.getToken();
+    const userData = AuthService.getUserData(token);
+    userStore.setUser(userData);
+    router.push('/');
   } catch (error) {
     registerError.value = error.response?.data?.message || "L'inscription à échoué, veuillez réessayer";
   } finally {
