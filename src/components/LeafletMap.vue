@@ -3,23 +3,25 @@
 </template>
 
 <script setup>
-import {onMounted} from 'vue';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
-import {getMarkerColor, getPriorityRadius} from "../utils/map.js";
-import {frenchCities, incidentTypes, incidentDescriptions, priorityLevels} from "../utils/map.js";
+import { getMarkerColor, getPriorityRadius } from "../utils/map.js";
+import { frenchCities, incidentTypes, incidentDescriptions, priorityLevels } from "../utils/map.js";
+
+const router = useRouter();
+
 onMounted(async () => {
-  // Initialiser la carte centrée sur la France
+  console.log('Carte montée');
   const map = L.map('map').setView([46.603354, 1.888334], 6);
 
-  // Ajouter la couche OpenStreetMap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
   }).addTo(map);
 
   try {
-    // Générer des incidents aléatoires basés sur les utilisateurs de l'API
     const response = await axios.get('https://randomuser.me/api/?results=8&nat=fr');
     const users = response.data.results;
 
@@ -63,9 +65,7 @@ onMounted(async () => {
             <p><strong>Description :</strong> ${incident.desc}</p>
             <p><strong>Contact :</strong> ${user.phone}</p>
           </div>
-          <button
-            class="contact-btn"
-          >
+          <button class="contact-btn">
             Venir en aide
           </button>
         </div>
@@ -75,12 +75,26 @@ onMounted(async () => {
         maxWidth: 300,
         className: `incident-popup priority-${incident.priority}`
       });
+
+      marker.on('popupopen', () => {
+        const btn = document.querySelector('.contact-btn');
+        const userID = "67c73e0cf35ee80fb535dc5e"; // TODO envoie l'id de l'user @Sacha
+        if (btn) {
+          btn.addEventListener('click', () => { 
+            console.log('Redirection vers /messages/' + userID);
+            router.push(`/messages?c=${userID}`);
+          }, { once: true });
+        } else {
+          console.error('Bouton .contact-btn non trouvé');
+        }
+      });
     });
   } catch (error) {
     console.error('Erreur lors de la récupération des données:', error);
   }
 });
 </script>
+
 <style scoped>
 @import "@/assets/css/components/map.css";
 </style>

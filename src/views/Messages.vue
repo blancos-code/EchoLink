@@ -19,6 +19,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/user.js';
 import ConversationList from '@/components/ConversationList.vue';
 import ChatWindow from '@/components/ChatWindow.vue';
@@ -27,6 +28,7 @@ import MessageService from '@/service/MessageService';
 import socketClient from '@/utils/socket.js';
 
 const userStore = useUserStore();
+const route = useRoute();
 const conversations = ref([]);
 const drawer = ref(true);
 const selectedChat = ref(null);
@@ -35,7 +37,6 @@ const messages = ref([]);
 const typingUsers = ref(new Set());
 const activeConversationId = ref(null);
 
-// Watch for selected chat changes
 watch(selectedChat, (newChat, oldChat) => {
   if (oldChat?._id) {
     socketClient.socket?.emit('leave_conversation', oldChat._id);
@@ -45,13 +46,11 @@ watch(selectedChat, (newChat, oldChat) => {
   }
 });
 
-// Load messages for a conversation
 const loadMessages = async (conversationId) => {
   try {
     messages.value = await MessageService.getMessages(conversationId);
     activeConversationId.value = conversationId;
   } catch (error) {
-    toast.error('Error loading messages');
     console.error('Error loading messages:', error);
   }
 };
@@ -93,13 +92,18 @@ const addConversation = (newChat) => {
     conversations.value.push(newChat);
     showCreateChatForm.value = false;
     selectedChat.value = newChat;
+    if (newChat._id) {
+      loadMessages(newChat._id);
+    }
   } else {
-    selectedChat.value = conversations.value.find(chat =>
+    const existingChat = conversations.value.find(chat =>
       chat.participants.length === newChat.participants.length &&
       chat.participants.every(p1 =>
         newChat.participants.some(p2 => p1._id === p2._id)
       )
     );
+    selectedChat.value = existingChat;
+    loadMessages(existingChat._id);
   }
 };
 
@@ -107,17 +111,46 @@ const cancelCreation = () => {
   showCreateChatForm.value = false;
 };
 
+const processHelpRequest = async (targetUserId) => {
+  console.log('Traitement de la demande d\'aide pour userId:', targetUserId);
+
+  const existingChat = conversations.value.find(chat =>
+    chat.participants.some(p => p._id === targetUserId)
+  );
+
+  if (existingChat) {
+    console.log('Conversation existante trouvée:', existingChat._id);
+    selectedChat.value = existingChat;
+    await loadMessages(existingChat._id);
+  } else {
+    console.log('Création d\'une nouvelle conversation pour:', targetUserId);
+    // TODO recuperer les données de l'user (genre le nom pour le mettre en name de conv)
+    const newChat = await MessageService.createConversation({
+      name: targetUserId,
+      participantId: targetUserId,
+    });
+  }
+};
+
+const checkQueryForHelpRequest = async () => {
+  const targetUserId = route.query.c; // Récupérer le paramètre 'c' depuis la query string
+  if (targetUserId) {
+    console.log('UserId détecté dans la query (c):', targetUserId);
+    await processHelpRequest(targetUserId);
+  } else {
+    console.log('Aucun userId dans la query');
+  }
+};
+
 const setupSocketListeners = () => {
+  console.log('Configuration des écouteurs WebSocket');
   socketClient.socket?.on('new_message', ({ conversationId, message }) => {
-    // Add message if it's for the current conversation
     if (conversationId === activeConversationId.value) {
       const messageExists = messages.value.some(m => m._id === message._id);
       if (!messageExists) {
         messages.value.push(message);
       }
     }
-
-    // Update last message in conversation list
     const conversation = conversations.value.find(c => c._id === conversationId);
     if (conversation) {
       conversation.lastMessage = message;
@@ -152,22 +185,24 @@ const setupSocketListeners = () => {
 
 const initialize = async () => {
   try {
+    console.log('Initialisation des conversations pour userId:', userStore.userId);
     conversations.value = await MessageService.getConversations(userStore.userId);
+    console.log('Conversations chargées:', conversations.value.length);
   } catch (error) {
     console.error('Error loading conversations:', error);
   }
 };
 
 onMounted(async () => {
+  console.log('Page de conversation montée');
   await socketClient.connect();
-
   setupSocketListeners();
-
   await initialize();
+  await checkQueryForHelpRequest(); // Vérifier la query string pour une demande d’aide
 });
 
 onBeforeUnmount(() => {
-  // Cleanup
+  console.log('Page de conversation démontée');
   if (socketClient.socket) {
     socketClient.socket.off('new_message');
     socketClient.socket.off('new_conversation');
