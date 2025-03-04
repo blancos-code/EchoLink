@@ -8,48 +8,21 @@
             <v-img v-if="user.image" :src="user.image" alt="Avatar"></v-img>
           </v-avatar>
 
-          <v-file-input
-            v-if="isOwnProfile"
-            v-model="selectedImage"
-            accept="image/*"
-            label="Changer d'image"
-            @change="changeImage"
-          ></v-file-input>
+          <v-file-input v-if="isOwnProfile" v-model="selectedImage" accept="image/*" label="Changer d'image"
+            @change="changeImage"></v-file-input>
 
-          <v-text-field
-            v-model="user.nom"
-            label="Nom"
-            :rules="isOwnProfile ? [rules.required] : []"
-            :readonly="!isOwnProfile"
-          ></v-text-field>
-          <v-text-field
-            v-model="user.prenom"
-            label="Prénom"
-            :rules="isOwnProfile ? [rules.required] : []"
-            :readonly="!isOwnProfile"
-          ></v-text-field>
-          <v-text-field
-            v-model="user.email"
-            label="Email"
-            :rules="isOwnProfile ? [rules.required, rules.email] : []"
-            :readonly="!isOwnProfile"
-          ></v-text-field>
-          <v-text-field
-            v-model="user.tel"
-            label="Numéro de téléphone"
-            :rules="isOwnProfile ? [rules.required] : []"
-            :readonly="!isOwnProfile"
-          ></v-text-field>
+          <v-text-field v-model="user.nom" label="Nom" :rules="isOwnProfile ? [rules.required] : []"
+            :readonly="!isOwnProfile"></v-text-field>
+          <v-text-field v-model="user.prenom" label="Prénom" :rules="isOwnProfile ? [rules.required] : []"
+            :readonly="!isOwnProfile"></v-text-field>
+          <v-text-field v-model="user.email" label="Email" :rules="isOwnProfile ? [rules.required, rules.email] : []"
+            :readonly="!isOwnProfile"></v-text-field>
+          <v-text-field v-model="user.tel" label="Numéro de téléphone" :rules="isOwnProfile ? [rules.required] : []"
+            :readonly="!isOwnProfile"></v-text-field>
         </v-form>
 
-        <v-btn
-          v-if="isOwnProfile"
-          color="primary"
-          class="mt-4"
-          @click="saveProfile"
-          :disabled="loading"
-          :loading="loading"
-        >
+        <v-btn v-if="isOwnProfile" color="primary" class="mt-4" @click="saveProfile" :disabled="loading"
+          :loading="loading">
           Sauvegarder
         </v-btn>
 
@@ -58,27 +31,11 @@
           <v-col>
             <h3>Laisser un avis</h3>
             <v-form ref="reviewForm" lazy-validation>
-              <v-rating
-                v-model="rating"
-                color="yellow darken-3"
-                background-color="grey lighten-1"
-                length="5"
-                size="32"
-                class="mb-4"
-              ></v-rating>
-              <v-textarea
-                v-model="comment"
-                label="Commentaire"
-                rows="3"
-                :rules="[rules.requiredComment]"
-                outlined
-              ></v-textarea>
-              <v-btn
-                color="primary"
-                @click="submitReview"
-                :disabled="reviewLoading"
-                :loading="reviewLoading"
-              >
+              <v-rating v-model="rating" color="yellow darken-3" background-color="grey lighten-1" length="5" size="32"
+                class="mb-4"></v-rating>
+              <v-textarea v-model="comment" label="Commentaire" rows="3" :rules="[rules.requiredComment]"
+                outlined></v-textarea>
+              <v-btn color="primary" @click="submitReview" :disabled="reviewLoading" :loading="reviewLoading">
                 Envoyer l’avis
               </v-btn>
             </v-form>
@@ -92,31 +49,18 @@
             <div v-if="reviews.length > 0">
               <p>
                 Note moyenne :
-                <v-rating
-                  :value="averageRating"
-                  color="yellow darken-3"
-                  background-color="grey lighten-1"
-                  length="5"
-                  size="24"
-                  readonly
-                  half-increments
-                  dense
-                ></v-rating>
+                <v-rating :value="averageRating" color="yellow darken-3" background-color="grey lighten-1" length="5"
+                  size="24" readonly half-increments dense></v-rating>
                 ({{ averageRating.toFixed(1) }} / 5)
               </p>
               <v-list>
                 <v-list-item v-for="review in reviews" :key="review._id">
                   <v-list-item-content>
                     <v-list-item-title>
-                      <v-rating
-                        :value="review.rating"
-                        color="yellow darken-3"
-                        background-color="grey lighten-1"
-                        length="5"
-                        size="20"
-                        readonly
-                        dense
-                      ></v-rating>
+                      <v-rating :value="Number(review.rating)" color="yellow darken-3" background-color="grey lighten-1"
+                        length="5" size="20" readonly dense></v-rating>
+                      <!-- Ajout pour débogage -->
+                      <span class="ml-2 text-caption">({{ review.rating }})</span>
                     </v-list-item-title>
                     <v-list-item-subtitle>{{ review.comment }}</v-list-item-subtitle>
                     <v-list-item-subtitle class="text-caption text-grey">
