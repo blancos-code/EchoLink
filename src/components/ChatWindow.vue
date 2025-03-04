@@ -5,8 +5,8 @@
       <v-btn icon @click="goBack">
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
-      <v-avatar size="40" class="mx-2">
-        <v-img :src="selectedChat?.avatar" alt="User avatar"></v-img>
+      <v-avatar size="40" class="mx-2 clickable" onclick="console.log('coucou')">
+        <v-img :src="selectedChat?.avatar ? selectedChat.avatar :'https://static-00.iconduck.com/assets.00/profile-default-icon-2048x2045-u3j7s5nj.png' " alt="User avatar"></v-img>
       </v-avatar>
       <div>
         <div class="font-weight-bold">{{ selectedChat != null ? selectedChat?.name : selectedForum != null ? selectedForum?.titre : ''}}</div>
@@ -121,3 +121,9 @@ export default {
   },
 };
 </script>
+
+<style>
+.clickable{
+  cursor: pointer;
+}
+</style>

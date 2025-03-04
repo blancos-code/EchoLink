@@ -26,6 +26,7 @@ import ChatWindow from '@/components/ChatWindow.vue';
 import CreateChatDialog from '@/components/CreateChatDialog.vue';
 import MessageService from '@/service/MessageService';
 import socketClient from '@/utils/socket.js';
+import userService from '../service/userService';
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -124,16 +125,19 @@ const processHelpRequest = async (targetUserId) => {
     await loadMessages(existingChat._id);
   } else {
     console.log('Création d\'une nouvelle conversation pour:', targetUserId);
-    // TODO recuperer les données de l'user (genre le nom pour le mettre en name de conv)
+    const userData = await userService.getUserById(targetUserId);
+    console.log("userData: "+JSON.stringify(userData));
+
     const newChat = await MessageService.createConversation({
-      name: targetUserId,
+      name: userData.nom + " " + userData.prenom,
       participantId: targetUserId,
     });
+
   }
 };
 
 const checkQueryForHelpRequest = async () => {
-  const targetUserId = route.query.c; // Récupérer le paramètre 'c' depuis la query string
+  const targetUserId = route.query.c;
   if (targetUserId) {
     console.log('UserId détecté dans la query (c):', targetUserId);
     await processHelpRequest(targetUserId);

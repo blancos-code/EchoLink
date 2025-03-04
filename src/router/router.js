@@ -42,8 +42,12 @@ const routes = [
                 name: 'profile',
                 component: Profile,
                 meta: {requiresAuth: true}
-            }
-
+            },
+            {
+                path: '/profile/:id',
+                name: 'OtherProfile',
+                component: Profile
+              },
         ]
     },
     {
