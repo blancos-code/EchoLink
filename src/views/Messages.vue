@@ -57,6 +57,7 @@ const loadMessages = async (conversationId) => {
 };
 
 const handleChatSelect = async (chat) => {
+  messages.value = [];
   selectedChat.value = chat;
   if (chat?._id) {
     await loadMessages(chat._id);
