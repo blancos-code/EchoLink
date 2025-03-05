@@ -1,19 +1,10 @@
 <template>
   <v-app>
     <v-layout>
-      <v-navigation-drawer
-          permanent
-      >
+      <v-navigation-drawer permanent>
         <template v-slot:prepend>
-          <div
-              class="d-inline-flex"
-          >
-            <v-img
-                src="/src/assets/images/logo.png"
-                alt=""
-                width="28px"
-                class="ml-2"
-            />
+          <div class="d-inline-flex">
+            <v-img src="/src/assets/images/logo.png" alt="" width="28px" class="ml-2" />
             <v-card-title class="mt-1">
               EchoLink
             </v-card-title>
@@ -21,27 +12,15 @@
         </template>
 
         <template v-slot:append>
-          <v-list-item
-              @click="accessProfile"
-              lines="two"
-              :prepend-avatar='user != null && user.image != null ? user.image : "https://randomuser.me/api/portraits/women/81.jpg"'
-              subtitle="En ligne"
-              :title='user!= null ? `${user.prenom} ${user.nom}` : ""'
-          >
+          <v-list-item @click="accessProfile" lines="two"
+            :prepend-avatar='user != null && user.image != null ? user.image : "https://randomuser.me/api/portraits/women/81.jpg"'
+            subtitle="En ligne" :title='user != null ? `${user.prenom} ${user.nom}` : ""'>
             <template #append>
-              <v-btn
-                  icon="mdi-bell"
-                  variant="text"
-              />
+              <v-btn icon="mdi-bell" variant="text" />
             </template>
           </v-list-item>
           <div class="pa-2">
-            <v-btn
-                block
-                variant="flat"
-                color="error"
-                @click="logout"
-            >
+            <v-btn block variant="flat" color="error" @click="logout">
               Déconnexion
             </v-btn>
           </div>
@@ -50,58 +29,50 @@
         <v-divider></v-divider>
 
         <v-list density="compact" nav>
-          <router-link
-              v-for="route in routes"
-              :to="route.name"
-              style="color: black; text-decoration: none;"
-          >
-            <v-list-item
-                :prepend-icon="route.icon"
-                :title="route.title"
-                :value="route.name"
-            />
+          <router-link v-for="route in routes" :to="{ name: route.name }" style="color: black; text-decoration: none;">
+            <v-list-item :prepend-icon="route.icon" :title="route.title" :value="route.name" />
           </router-link>
         </v-list>
       </v-navigation-drawer>
       <v-main>
         <v-container fluid>
-          <router-view/>
+          <router-view />
         </v-container>
       </v-main>
     </v-layout>
   </v-app>
 </template>
 <script setup>
-  import AuthService from "@/service/AuthService.js";
-  import {onMounted, onUpdated, ref} from "vue";
-  import {router} from "@/router/router.js";
-  import UserService from "@/service/userService.js";
-  const user = ref(null);
+import AuthService from "@/service/AuthService.js";
+import { onMounted, onUpdated, ref } from "vue";
+import { router } from "@/router/router.js";
+import UserService from "@/service/userService.js";
+const user = ref(null);
 
-  const routes = ref([
-    {title: 'Carte des urgences', icon: 'mdi-map', name: 'map'},
-    {title: 'Messages', icon: 'mdi-message', name: 'messages'},
-    {title: 'Forum', icon: 'mdi-forum', name: 'forum'},
-    {title: 'Classement', icon: 'mdi-podium', name: 'classement'},
-  ])
+const routes = ref([
+  { title: 'Carte des urgences', icon: 'mdi-map', name: 'map' },
+  { title: 'Messages', icon: 'mdi-message', name: 'messages' },
+  { title: 'Forum', icon: 'mdi-forum', name: 'forum' },
+  { title: 'Classement', icon: 'mdi-podium', name: 'classement' },
+])
 
- onMounted( () => {
-   updateUser();
- });
+onMounted(() => {
+  updateUser();
+});
 
-  onUpdated(() => {
-    updateUser();
-  } )
+onUpdated(() => {
+  updateUser();
+})
 
-  const updateUser = async () => {
-    user.value = await UserService.getUserById(AuthService.getCurrentUserId());
-  }
-  const logout = () =>{
-    AuthService.logout();
-    router.push('/auth');
-  };
+const updateUser = async () => {
+  user.value = await UserService.getUserById(AuthService.getCurrentUserId());
+}
+const logout = () => {
+  AuthService.logout();
+  router.push('/auth');
+};
 
-  const accessProfile = () => {
-    router.push('/profile');
-  };
+const accessProfile = () => {
+  router.push('/profile');
+};
 </script>

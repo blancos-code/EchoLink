@@ -5,8 +5,11 @@
       <v-btn icon @click="goBack">
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
-      <v-avatar size="40" class="mx-2 clickable" onclick="console.log('coucou')">
-        <v-img :src="selectedChat?.avatar ? selectedChat.avatar :'https://static-00.iconduck.com/assets.00/profile-default-icon-2048x2045-u3j7s5nj.png' " alt="User avatar"></v-img>
+      <v-avatar size="40" class="mx-2 clickable" @click="goToProfile">
+        <v-img 
+          :src="selectedChat?.avatar ? selectedChat.avatar :'https://static-00.iconduck.com/assets.00/profile-default-icon-2048x2045-u3j7s5nj.png' " 
+          alt="User avatar"
+          />
       </v-avatar>
       <div>
         <div class="font-weight-bold">{{ selectedChat != null ? selectedChat?.name : selectedForum != null ? selectedForum?.titre : ''}}</div>
@@ -75,6 +78,8 @@ import "@/assets/css/components/chatWindow.css";
 import MessageService from "@/service/MessageService";
 import ForumService from "@/service/ForumService.js";
 import { formatDate } from "@/utils/date";
+import { useRouter } from 'vue-router';
+
 export default {
   name: 'Chat',
   props: {
@@ -86,6 +91,21 @@ export default {
   data: () => ({
     newMessage: '',
   }),
+  setup(props) {
+    const router = useRouter();
+
+    const goToProfile = () => {
+      const participants = props.selectedChat.participants;
+      let otherUserId = participants[0].id == props.userId ? participants[1] : participants[0];
+      if (otherUserId) {
+        router.push(`/profile/${otherUserId.id}`);
+      } else {
+        console.error("userId is not defined");
+      }
+    };
+
+    return { goToProfile };
+  },
   methods: {
     formatDate,
     async sendMessage() {
