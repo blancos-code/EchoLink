@@ -7,12 +7,12 @@
       </v-btn>
       <v-avatar size="40" class="mx-2 clickable" @click="goToProfile">
         <v-img 
-          :src="selectedChat?.avatar ? selectedChat.avatar :'https://static-00.iconduck.com/assets.00/profile-default-icon-2048x2045-u3j7s5nj.png' " 
+          :src="selectedChat?.avatar ? selectedChat.avatar : 'https://static-00.iconduck.com/assets.00/profile-default-icon-2048x2045-u3j7s5nj.png'" 
           alt="User avatar"
-          />
+        />
       </v-avatar>
       <div>
-        <div class="font-weight-bold">{{ selectedChat != null ? selectedChat?.name : selectedForum != null ? selectedForum?.titre : ''}}</div>
+        <div class="font-weight-bold">{{ selectedChat?.name || 'Assistant IA' }}</div>
         <div class="caption text-grey">Active now</div>
       </div>
       <v-spacer></v-spacer>
@@ -29,16 +29,16 @@
 
     <!-- Chat Messages -->
     <v-card class="chat-content" flat ref="messagesContainer">
-      <v-card-text  class="messages-container">
+      <v-card-text class="messages-container">
         <template v-for="(message, index) in messageHistory" :key="index">
-          <div :class="['message-wrapper', message.user === userId ? 'sent' : 'received']">
-            <v-card :color="message.user === userId ? 'primary' : 'grey lighten-3'"
-                    :class="['message-bubble', message.user === userId ? 'sent' : 'received']" rounded="lg">
-              <v-card-text :class="['pa-2', message.user === userId ? 'white--text' : '']">
+          <div :class="['message-wrapper', message.userId === userId ? 'sent' : 'received']">
+            <v-card :color="message.userId === userId ? 'primary' : 'grey lighten-3'"
+                    :class="['message-bubble', message.userId === userId ? 'sent' : 'received']" rounded="lg">
+              <v-card-text :class="['pa-2', message.userId === userId ? 'white--text' : '']">
                 {{ message.text }}
               </v-card-text>
             </v-card>
-            <div class="caption text-grey message-time">{{ (message.forum != null && message.user !== userId) ? `${ message.userName} - ` : '' }}{{formatDate(message.date)}} </div>
+            <div class="caption text-grey message-time">{{ formatDate(message.date) }}</div>
           </div>
         </template>
       </v-card-text>
@@ -54,9 +54,8 @@
             </v-btn>
           </v-col>
           <v-col>
-            <!-- Replacing v-text-field with v-textarea -->
             <v-textarea v-model="newMessage" placeholder="Message..." rounded filled dense hide-details
-                         auto-grow rows="1" variant="outlined">
+                        auto-grow rows="1" variant="outlined" @keyup.enter="sendMessage">
               <template v-slot:append>
                 <v-btn color="primary" icon @click="sendMessage" class="ml-0">
                   <v-icon>mdi-send</v-icon>
@@ -72,8 +71,6 @@
 
 <script>
 import "@/assets/css/components/chatWindow.css";
-import MessageService from "@/service/MessageService";
-import ForumService from "@/service/ForumService.js";
 import { formatDate } from "@/utils/date";
 import { useRouter } from 'vue-router';
 
@@ -81,7 +78,6 @@ export default {
   name: 'Chat',
   props: {
     selectedChat: Object,
-    selectedForum: Object,
     messageHistory: Array,
     userId: String,
   },
@@ -92,10 +88,12 @@ export default {
     const router = useRouter();
 
     const goToProfile = () => {
-      const participants = props.selectedChat.participants;
-      let otherUserId = participants[0].id == props.userId ? participants[1] : participants[0];
-      if (otherUserId && otherUserId._id!="ai") {
-        router.push(`/profile/${otherUserId.id}`);
+      if (props.selectedChat?.id !== 'ai-assistant') {
+        const participants = props.selectedChat.participants;
+        let otherUserId = participants[0]._id === props.userId ? participants[1] : participants[0];
+        if (otherUserId && otherUserId._id !== 'ai') {
+          router.push(`/profile/${otherUserId._id}`);
+        }
       }
     };
 
@@ -103,32 +101,10 @@ export default {
   },
   methods: {
     formatDate,
-    async sendMessage() {
+    sendMessage() {
       if (!this.newMessage.trim()) return;
-      if(this.selectedChat != null){
-        try {
-          await MessageService.sendMessage({
-            conversationId: this.selectedChat._id,
-            text: this.newMessage
-          });
-          this.newMessage = '';
-        } catch (error) {
-          console.error('Erreur lors de l\'envoi du message dans la conversation:', error);
-        }
-      }
-      if(this.selectedForum != null){
-        try {
-          await ForumService.sendMessage(
-            this.selectedForum._id,
-            this.newMessage
-          )
-
-          this.newMessage = '';
-        } catch (error) {
-          console.error('Erreur lors de l\'envoi du message dans le forum:', error);
-        }
-
-      }
+      this.$emit('send-message', this.newMessage);
+      this.newMessage = '';
     },
     goBack() {
       this.$emit('back');
@@ -138,7 +114,7 @@ export default {
 </script>
 
 <style>
-.clickable{
+.clickable {
   cursor: pointer;
 }
 </style>

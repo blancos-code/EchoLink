@@ -9,9 +9,9 @@
 
   <template v-if="selectedChat">
     <chat-window
-      :selectedChat="selectedChat"
-      :messageHistory="messages"
-      :userId="userStore.userId"
+      :selected-chat="selectedChat"
+      :message-history="messages"
+      :user-id="userStore.userId"
       :typing-users="Array.from(typingUsers)"
       @typing="handleTyping"
       @back="handleBack"
@@ -51,14 +51,14 @@ const messages = ref([]);
 const typingUsers = ref(new Set());
 const activeConversationId = ref(null);
 
-// Clé API Hugging Face (remplace par la tienne)
-const HUGGINGFACE_API_KEY = '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'; // Ajoute ta clé ici
+// Clé API Hugging Face
+const HUGGINGFACE_API_KEY = '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';
 
 watch(selectedChat, (newChat, oldChat) => {
   if (oldChat?._id) {
     socketClient.socket?.emit('leave_conversation', oldChat._id);
   }
-  if (newChat?._id) {
+  if (newChat?._id && newChat.id !== 'ai-assistant') {
     socketClient.socket?.emit('join_conversation', newChat._id);
   }
 });
@@ -75,7 +75,9 @@ const loadMessages = async (conversationId) => {
 const handleChatSelect = async (chat) => {
   messages.value = [];
   selectedChat.value = chat;
+
   if (chat.id === 'ai-assistant') {
+    // Initialiser la conversation avec l'IA
     messages.value = [
       {
         _id: 'ai-initial',
@@ -98,7 +100,7 @@ const handleBack = () => {
 
 let typingTimeout;
 const handleTyping = () => {
-  if (!selectedChat.value) return;
+  if (!selectedChat.value || selectedChat.value.id === 'ai-assistant') return;
 
   socketClient.socket?.emit('typing_start', selectedChat.value._id);
 
@@ -109,7 +111,7 @@ const handleTyping = () => {
 };
 
 const handleSendMessage = async (messageText) => {
-  if (!selectedChat.value) return;
+  if (!selectedChat.value || !messageText.trim()) return;
 
   const newMessage = {
     conversationId: selectedChat.value._id || 'ai-assistant',
@@ -119,14 +121,13 @@ const handleSendMessage = async (messageText) => {
   };
 
   if (selectedChat.value.id === 'ai-assistant') {
-    // Ajouter le message de l’utilisateur
+    // Ajouter le message de l'utilisateur
     messages.value.push(newMessage);
-    console.log('Message envoyé à l’IA:', messageText);
 
-    // Appeler l’API Hugging Face
+    // Appeler l'API Hugging Face pour la réponse de l'IA
     try {
       const response = await axios.post(
-        'https://api-inference.huggingface.co/models/facebook/bart-large',
+        'https://api-inference.huggingface.co/models/gpt2',
         {
           inputs: messageText,
           parameters: { max_length: 100 },
