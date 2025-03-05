@@ -65,8 +65,8 @@ export const router = createRouter({
 })
 
 
-router.beforeEach(async (to, from, next) => { // Make beforeEach async
-    const isLoggedIn = AuthService.isAuthenticated();
+router.beforeEach(async (to, from, next) => {
+    const isLoggedIn = await AuthService.isAuthenticated();
     console.log("is logged", isLoggedIn);
 
     if (!isLoggedIn) {

@@ -55,8 +55,25 @@ class AuthService {
     }
   }
 
-  isAuthenticated() {
-    return !!this.getToken();
+  async verifyToken() {
+    try {
+      const token = this.getToken()
+
+      const response = await axios.get(`${API_URL}/verifyToken`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data === true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async isAuthenticated() {
+    if (!this.getToken()) return false;
+    return await this.verifyToken();
   }
 }
 
