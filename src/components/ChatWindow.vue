@@ -58,10 +58,7 @@
             <v-textarea v-model="newMessage" placeholder="Message..." rounded filled dense hide-details
                          auto-grow rows="1" variant="outlined">
               <template v-slot:append>
-                <v-btn v-if="!newMessage" icon class="ml-0">
-                  <v-icon>mdi-microphone</v-icon>
-                </v-btn>
-                <v-btn v-else color="primary" icon @click="sendMessage" class="ml-0">
+                <v-btn color="primary" icon @click="sendMessage" class="ml-0">
                   <v-icon>mdi-send</v-icon>
                 </v-btn>
               </template>
@@ -97,10 +94,8 @@ export default {
     const goToProfile = () => {
       const participants = props.selectedChat.participants;
       let otherUserId = participants[0].id == props.userId ? participants[1] : participants[0];
-      if (otherUserId) {
+      if (otherUserId && otherUserId._id!="ai") {
         router.push(`/profile/${otherUserId.id}`);
-      } else {
-        console.error("userId is not defined");
       }
     };
 

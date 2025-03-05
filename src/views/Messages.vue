@@ -1,10 +1,22 @@
 <template>
-  <conversation-list v-model="drawer" :chats="conversations" :selected-chat-id="selectedChat?.id"
-    @chat-selected="handleChatSelect" @create-chat="showCreateChatForm = true" />
+  <conversation-list
+    v-model="drawer"
+    :chats="conversations"
+    :selected-chat-id="selectedChat?.id"
+    @chat-selected="handleChatSelect"
+    @create-chat="showCreateChatForm = true"
+  />
 
   <template v-if="selectedChat">
-    <chat-window :selectedChat="selectedChat" :messageHistory="messages" :userId="userStore.userId"
-      :typing-users="Array.from(typingUsers)" @typing="handleTyping" @back="handleBack" />
+    <chat-window
+      :selectedChat="selectedChat"
+      :messageHistory="messages"
+      :userId="userStore.userId"
+      :typing-users="Array.from(typingUsers)"
+      @typing="handleTyping"
+      @back="handleBack"
+      @send-message="handleSendMessage"
+    />
   </template>
 
   <v-container v-else class="d-flex align-center justify-center" fluid>
@@ -27,6 +39,7 @@ import CreateChatDialog from '@/components/CreateChatDialog.vue';
 import MessageService from '@/service/MessageService';
 import socketClient from '@/utils/socket.js';
 import userService from '../service/userService';
+import axios from 'axios';
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -37,6 +50,9 @@ const showCreateChatForm = ref(false);
 const messages = ref([]);
 const typingUsers = ref(new Set());
 const activeConversationId = ref(null);
+
+// Clé API Hugging Face (remplace par la tienne)
+const HUGGINGFACE_API_KEY = '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'; // Ajoute ta clé ici
 
 watch(selectedChat, (newChat, oldChat) => {
   if (oldChat?._id) {
@@ -59,7 +75,17 @@ const loadMessages = async (conversationId) => {
 const handleChatSelect = async (chat) => {
   messages.value = [];
   selectedChat.value = chat;
-  if (chat?._id) {
+  if (chat.id === 'ai-assistant') {
+    messages.value = [
+      {
+        _id: 'ai-initial',
+        text: 'Bonjour ! Je suis ton assistant IA. Comment puis-je t’aider ?',
+        userId: 'ai',
+        date: new Date(),
+      },
+    ];
+    activeConversationId.value = 'ai-assistant';
+  } else if (chat?._id) {
     await loadMessages(chat._id);
   }
 };
@@ -82,12 +108,64 @@ const handleTyping = () => {
   }, 1000);
 };
 
+const handleSendMessage = async (messageText) => {
+  if (!selectedChat.value) return;
+
+  const newMessage = {
+    conversationId: selectedChat.value._id || 'ai-assistant',
+    text: messageText,
+    userId: userStore.userId,
+    date: new Date(),
+  };
+
+  if (selectedChat.value.id === 'ai-assistant') {
+    // Ajouter le message de l’utilisateur
+    messages.value.push(newMessage);
+    console.log('Message envoyé à l’IA:', messageText);
+
+    // Appeler l’API Hugging Face
+    try {
+      const response = await axios.post(
+        'https://api-inference.huggingface.co/models/facebook/bart-large',
+        {
+          inputs: messageText,
+          parameters: { max_length: 100 },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${HUGGINGFACE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const aiResponse = response.data[0]?.generated_text || 'Je suis une IA et je réponds à ton message !';
+      messages.value.push({
+        _id: `ai-${Date.now()}`,
+        text: aiResponse,
+        userId: 'ai',
+        date: new Date(),
+      });
+    } catch (error) {
+      console.error('Erreur lors de l’appel à l’API IA:', error);
+      messages.value.push({
+        _id: `ai-error-${Date.now()}`,
+        text: 'Désolé, une erreur s’est produite. Réessayez plus tard.',
+        userId: 'ai',
+        date: new Date(),
+      });
+    }
+  } else {
+    // Conversation normale
+    await MessageService.sendMessage(newMessage);
+    socketClient.socket?.emit('new_message', newMessage);
+  }
+};
+
 const addConversation = (newChat) => {
   const exists = conversations.value.some(chat =>
     chat.participants.length === newChat.participants.length &&
-    chat.participants.every(p1 =>
-      newChat.participants.some(p2 => p1._id === p2._id)
-    )
+    chat.participants.every(p1 => newChat.participants.some(p2 => p1._id === p2._id))
   );
 
   if (!exists) {
@@ -100,9 +178,7 @@ const addConversation = (newChat) => {
   } else {
     const existingChat = conversations.value.find(chat =>
       chat.participants.length === newChat.participants.length &&
-      chat.participants.every(p1 =>
-        newChat.participants.some(p2 => p1._id === p2._id)
-      )
+      chat.participants.every(p1 => newChat.participants.some(p2 => p1._id === p2._id))
     );
     selectedChat.value = existingChat;
     loadMessages(existingChat._id);
@@ -127,13 +203,13 @@ const processHelpRequest = async (targetUserId) => {
   } else {
     console.log('Création d\'une nouvelle conversation pour:', targetUserId);
     const userData = await userService.getUserById(targetUserId);
-    console.log("userData: "+JSON.stringify(userData));
+    console.log("userData: " + JSON.stringify(userData));
 
     const newChat = await MessageService.createConversation({
       name: userData.nom + " " + userData.prenom,
       participantId: targetUserId,
     });
-
+    addConversation(newChat);
   }
 };
 
@@ -150,7 +226,7 @@ const checkQueryForHelpRequest = async () => {
 const setupSocketListeners = () => {
   console.log('Configuration des écouteurs WebSocket');
   socketClient.socket?.on('new_message', ({ conversationId, message }) => {
-    if (conversationId === activeConversationId.value) {
+    if (conversationId === activeConversationId.value && conversationId !== 'ai-assistant') {
       const messageExists = messages.value.some(m => m._id === message._id);
       if (!messageExists) {
         messages.value.push(message);
@@ -203,7 +279,7 @@ onMounted(async () => {
   await socketClient.connect();
   setupSocketListeners();
   await initialize();
-  await checkQueryForHelpRequest(); // Vérifier la query string pour une demande d’aide
+  await checkQueryForHelpRequest();
 });
 
 onBeforeUnmount(() => {

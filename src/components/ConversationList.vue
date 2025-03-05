@@ -25,6 +25,7 @@
     <v-list lines="two">
       <!-- Élément épinglé pour l’assistant IA -->
       <v-list-item
+        v-if="!isForum"
         title="Assistant IA"
         prepend-icon="mdi-robot"
         @click="selectAIChat"
@@ -171,7 +172,6 @@ export default {
         id: 'ai-assistant',
         name: 'Assistant IA',
         participants: [
-          { _id: 'current-user', nom: 'Vous', prenom: '', image: '' },
           { _id: 'ai', nom: 'Assistant', prenom: 'IA', image: 'https://cdn-icons-png.flaticon.com/512/4712/4712076.png' },
         ],
         lastMessage: 'Comment puis-je vous aider ?',
