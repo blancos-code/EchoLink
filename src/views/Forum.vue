@@ -1,10 +1,10 @@
 <template>
   <div>
-    <conversation-list v-model="drawer" title="Forums" :forums="forums" :selected-forum-id="selectedForum?.id"
-      :userId="userId" isForum="true" @forum-selected="handleForumSelect" @create-chat="showCreateForumDialog = true"
+    <forum-list v-model="drawer" title="Forums" :forums="forums" :selected-forum-id="selectedForum?.id"
+      :userId="userId" isForum="true" @forum-selected="handleForumSelect" @create-forum="showCreateForumDialog = true"
       @create-thematique="showCreateThematiqueDialog = true" />
     <template v-if="selectedForum">
-      <chat-window :selectedForum="selectedForum" :messageHistory="messages" :userId="userId" @back="handleBack" />
+      <forum-window :selectedForum="selectedForum" :messageHistory="messages" :userId="userId" @back="handleBack" />
     </template>
     <v-container v-else class="d-flex align-center justify-center" fluid>
       <div class="text-center">
@@ -27,8 +27,8 @@
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
 import ForumService from '@/service/ForumService';
-import ConversationList from "@/components/ConversationList.vue";
-import ChatWindow from '@/components/ChatWindow.vue';
+import ForumList from "@/components/ForumList.vue";
+import ForumWindow from '@/components/ForumWindow.vue';
 import CreateForumDialog from "@/components/CreateForumDialog.vue";
 import CreateThematiqueDialog from "@/components/CreateThematiqueDialog.vue";
 import socketClient from "@/utils/socket.js";

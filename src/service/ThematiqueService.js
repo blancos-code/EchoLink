@@ -15,6 +15,16 @@ class ThematiqueService {
         }
     }
 
+    async getThematiqueByID(thematiqueId) {
+        try {
+            const response = await apiService.get(`${this.API_URL}/${thematiqueId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Erreur lors de la récupération de la thématique :", error);
+            return [];
+        }
+    }
+
     async createThematique(thematiqueData) {
         try {
             const response = await apiService.post(this.API_URL, thematiqueData);
