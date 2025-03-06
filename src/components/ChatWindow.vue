@@ -27,14 +27,15 @@
       </v-btn>
     </v-app-bar>
 
+
     <!-- Chat Messages -->
     <v-card class="chat-content" flat ref="messagesContainer">
       <v-card-text class="messages-container">
         <template v-for="(message, index) in messageHistory" :key="index">
-          <div :class="['message-wrapper', message.userId === userId ? 'sent' : 'received']">
-            <v-card :color="message.userId === userId ? 'primary' : 'grey lighten-3'"
-                    :class="['message-bubble', message.userId === userId ? 'sent' : 'received']" rounded="lg">
-              <v-card-text :class="['pa-2', message.userId === userId ? 'white--text' : '']">
+          <div :class="['message-wrapper', message.user === userId ? 'sent' : 'received']">
+            <v-card :color="message.user === userId ? 'primary' : 'grey lighten-3'"
+                    :class="['message-bubble', message.user === userId ? 'sent' : 'received']" rounded="lg">
+              <v-card-text :class="['pa-2', message.user === userId ? 'white--text' : '']">
                 {{ message.text }}
               </v-card-text>
             </v-card>

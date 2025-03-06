@@ -19,6 +19,8 @@
     />
   </template>
 
+  
+
   <v-container v-else class="d-flex align-center justify-center" fluid>
     <div class="text-center">
       <v-icon size="64" color="grey-lighten-1">mdi-message-outline</v-icon>
@@ -82,7 +84,7 @@ const handleChatSelect = async (chat) => {
       {
         _id: 'ai-initial',
         text: 'Bonjour ! Je suis ton assistant IA. Comment puis-je t’aider ?',
-        userId: 'ai',
+        user: 'ai',
         date: new Date(),
       },
     ];
@@ -116,7 +118,7 @@ const handleSendMessage = async (messageText) => {
   const newMessage = {
     conversationId: selectedChat.value._id || 'ai-assistant',
     text: messageText,
-    userId: userStore.userId,
+    user: userStore.userId,
     date: new Date(),
   };
 
