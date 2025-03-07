@@ -1,4 +1,7 @@
 <template>
+  <v-dialog v-model="showCreateAlertDialog" persistent width="500">
+    <create-alert-dialog @alert-created="handleAlertCreated" @cancel="showCreateAlertDialog = false"></create-alert-dialog>
+  </v-dialog>
   <v-row>
     <v-col cols="4">
       <v-card class="pr-5 mb-5 bg-white" variant="outlined">
@@ -27,20 +30,36 @@
           Actions
         </v-card-title>
         <v-card-actions>
-          <v-btn color="error" class="ml-2" variant="outlined" prepend-icon="mdi-alert-outline">
+          <v-btn color="error" class="ml-2" variant="outlined" prepend-icon="mdi-alert-outline" @click="showCreateAlertDialog = true">
             Signaler une urgence
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
     <v-col>
-      <LeafletMap />
+      <LeafletMap :alerts="alerts"/>
     </v-col>
   </v-row>
 </template>
 
 <script setup>
-import LeafletMap from '../components/LeafletMap.vue';
+import LeafletMap from '@/components/LeafletMap.vue';
+import {onMounted, ref} from 'vue';
+import CreateAlertDialog from "@/components/CreateAlertDialog.vue";
+import AlertService from "@/service/AlertService.js";
+
+const showCreateAlertDialog = ref(false)
+const alerts = ref([])
+
+onMounted( async () =>{
+  ref.alerts = await AlertService.getAllAlerts();
+})
+
+const handleAlertCreated  = (newAlert) => {
+  alerts.value.push(newAlert)
+  showCreateAlertDialog.value = false
+}
+
 </script>
 <style>
 .legend-item {
