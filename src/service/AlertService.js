@@ -25,6 +25,16 @@ class AlertService {
         }
     }
 
+    async resolveAlert(alertId) {
+        try {
+            const response = await apiService.post(`/alerts/resolve/${alertId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error resolving alert:", error);
+            throw error;
+        }
+    }
+
     on(event, listener) {
         if (!this.eventListeners[event]) {
             this.eventListeners[event] = [];

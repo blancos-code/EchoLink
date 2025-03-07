@@ -37,7 +37,7 @@
       </v-card>
     </v-col>
     <v-col>
-      <LeafletMap :alerts="alerts"/>
+      <LeafletMap :alerts="alerts" @resolve-alert="resolveAlert"/>
     </v-col>
   </v-row>
 </template>
@@ -53,6 +53,7 @@ const showCreateAlertDialog = ref(false);
 const alerts = ref([]);
 
 onMounted(async () => {
+  await socketClient.connect();
   alerts.value = await AlertService.getAllAlerts();
   setupSocketListeners();
 });
@@ -61,12 +62,22 @@ const setupSocketListeners = () => {
   socketClient.socket?.on('new_alert', (alert) => {
     alerts.value.push(alert);
   });
+  socketClient.socket?.on('alert_resolved', (alert) => {
+    alerts.value = alerts.value.filter(a => a._id !== alert._id);
+  });
 };
 
 const handleAlertCreated = (newAlert) => {
   alerts.value.push(newAlert);
   showCreateAlertDialog.value = false;
 };
+
+async function resolveAlert(alert) {
+  AlertService.resolveAlert(alert._id).then(async () => {
+    alerts.value = await AlertService.getAllAlerts();
+    return true;
+  });
+}
 </script>
 
 <style>

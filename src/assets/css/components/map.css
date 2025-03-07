@@ -81,15 +81,25 @@
     font-size: 14px;
 }
 
-:deep(.contact-btn) {
+:deep(.contact-btn), :deep(.resolve-btn) {
     width: 100%;
     padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     color: white;
     border: none;
-    background-color: black;
+
     border-radius: 0 0 8px 8px;
     cursor: pointer;
     transition: background-color 0.2s;
+}
+
+:deep(.contact-btn){
+    background-color: black;
+}
+
+:deep(.resolve-btn){
+    background-color: red;
 }
 
 :deep(.contact-btn.priority-1) {

@@ -9,9 +9,10 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getMarkerColor, getPriorityRadius } from "@/utils/map.js";
 import AuthService from "@/service/AuthService.js";
+const emit = defineEmits(['resolve-alert']);
 
 const router = useRouter();
-const props = defineProps(['alerts']);
+const props = defineProps(['alerts', 'resolveAlert']);
 
 let map;
 
@@ -38,10 +39,10 @@ function updateMap() {
   });
 
   props.alerts.forEach(alert => {
-    const { zone_geographique, criticity, description, contact } = alert;
+    const { zone_geographique, criticity, description, contact, userId, treated } = alert;
     const [lat, lng] = zone_geographique.split(';').map(Number);
 
-    if (isNaN(lat) || isNaN(lng)) return;
+    if (isNaN(lat) || isNaN(lng) || treated) return;
 
     const markerColor = getMarkerColor(criticity);
     const markerRadius = getPriorityRadius(criticity);
@@ -59,7 +60,10 @@ function updateMap() {
       marker.getElement()?.classList.add('pulse-animation');
     }
 
-    const popupContent = `
+    const currentUserId = AuthService.getCurrentUserId();
+    const isOwner = userId === currentUserId;
+
+    let popupContent = `
       <div class="incident-popup">
         <div class="incident-header priority-${criticity}">
           <div class="incident-info">
@@ -75,8 +79,11 @@ function updateMap() {
         <button class="contact-btn">
           Venir en aide
         </button>
-      </div>
     `;
+  if(isOwner){
+    popupContent += `<button class="resolve-btn">Fermer l'urgence</button>`;
+  }
+  popupContent +=`</div>`;
 
     marker.bindPopup(popupContent, {
       maxWidth: 300,
@@ -85,15 +92,26 @@ function updateMap() {
 
     marker.on('popupopen', () => {
       const btn = document.querySelector('.contact-btn');
-      const userID = AuthService.getCurrentUserId();
       if (btn) {
         btn.addEventListener('click', () => {
-          console.log('Redirection vers /messages/' + userID);
-          router.push(`/messages?c=${userID}`);
+          console.log('Redirection vers /messages/' + userId);
+          router.push(`/messages?c=${userId}`);
         }, { once: true });
       } else {
         console.error('Bouton .contact-btn non trouvé');
       }
+      if (isOwner) {
+        const resolveBtn = document.querySelector('.resolve-btn');
+        if (resolveBtn) {
+          resolveBtn.addEventListener('click', () => {
+            emit('resolve-alert', alert);
+            marker.closePopup();
+          }, { once: true });
+        } else {
+          console.error('Bouton .resolve-btn non trouvé');
+        }
+      }
+
     });
   });
 }
