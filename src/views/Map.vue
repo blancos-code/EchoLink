@@ -1,4 +1,7 @@
 <template>
+  <v-dialog v-model="showCreateAlertDialog" persistent width="500">
+    <create-alert-dialog @alert-created="handleAlertCreated" @cancel="showCreateAlertDialog = false"></create-alert-dialog>
+  </v-dialog>
   <v-row>
     <v-col cols="4">
       <v-card class="pr-5 mb-5 bg-white" variant="outlined">
@@ -27,21 +30,56 @@
           Actions
         </v-card-title>
         <v-card-actions>
-          <v-btn color="error" class="ml-2" variant="outlined" prepend-icon="mdi-alert-outline">
+          <v-btn color="error" class="ml-2" variant="outlined" prepend-icon="mdi-alert-outline" @click="showCreateAlertDialog = true">
             Signaler une urgence
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
     <v-col>
-      <LeafletMap />
+      <LeafletMap :alerts="alerts" @resolve-alert="resolveAlert"/>
     </v-col>
   </v-row>
 </template>
 
 <script setup>
-import LeafletMap from '../components/LeafletMap.vue';
+import LeafletMap from '@/components/LeafletMap.vue';
+import { onMounted, ref } from 'vue';
+import CreateAlertDialog from "@/components/CreateAlertDialog.vue";
+import AlertService from "@/service/AlertService.js";
+import socketClient from "@/utils/socket.js";
+
+const showCreateAlertDialog = ref(false);
+const alerts = ref([]);
+
+onMounted(async () => {
+  await socketClient.connect();
+  alerts.value = await AlertService.getAllAlerts();
+  setupSocketListeners();
+});
+
+const setupSocketListeners = () => {
+  socketClient.socket?.on('new_alert', (alert) => {
+    alerts.value.push(alert);
+  });
+  socketClient.socket?.on('alert_resolved', (alert) => {
+    alerts.value = alerts.value.filter(a => a._id !== alert._id);
+  });
+};
+
+const handleAlertCreated = (newAlert) => {
+  alerts.value.push(newAlert);
+  showCreateAlertDialog.value = false;
+};
+
+async function resolveAlert(alert) {
+  AlertService.resolveAlert(alert._id).then(async () => {
+    alerts.value = await AlertService.getAllAlerts();
+    return true;
+  });
+}
 </script>
+
 <style>
 .legend-item {
   display: flex;
@@ -68,3 +106,4 @@ import LeafletMap from '../components/LeafletMap.vue';
   background-color: #00a7e3;
 }
 </style>
+

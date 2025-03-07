@@ -58,27 +58,6 @@ class SocketClient {
     });
   }
 
-  // Join a conversation room
-  joinConversation(conversationId) {
-    if (this.socket) {
-      this.socket.emit("join_conversation", conversationId);
-    }
-  }
-
-  // Leave a conversation room
-  leaveConversation(conversationId) {
-    if (this.socket) {
-      this.socket.emit("leave_conversation", conversationId);
-    }
-  }
-
-  // Send typing status
-  sendTypingStatus(conversationId, isTyping) {
-    if (this.socket) {
-      this.socket.emit(isTyping ? "typing_start" : "typing_end", conversationId);
-    }
-  }
-
   // Add event listener
   on(event, handler) {
     if (!this.handlers.has(event)) {
