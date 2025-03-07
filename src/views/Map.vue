@@ -44,23 +44,31 @@
 
 <script setup>
 import LeafletMap from '@/components/LeafletMap.vue';
-import {onMounted, ref} from 'vue';
+import { onMounted, ref } from 'vue';
 import CreateAlertDialog from "@/components/CreateAlertDialog.vue";
 import AlertService from "@/service/AlertService.js";
+import socketClient from "@/utils/socket.js";
 
-const showCreateAlertDialog = ref(false)
-const alerts = ref([])
+const showCreateAlertDialog = ref(false);
+const alerts = ref([]);
 
-onMounted( async () =>{
-  ref.alerts = await AlertService.getAllAlerts();
-})
+onMounted(async () => {
+  alerts.value = await AlertService.getAllAlerts();
+  setupSocketListeners();
+});
 
-const handleAlertCreated  = (newAlert) => {
-  alerts.value.push(newAlert)
-  showCreateAlertDialog.value = false
-}
+const setupSocketListeners = () => {
+  socketClient.socket?.on('new_alert', (alert) => {
+    alerts.value.push(alert);
+  });
+};
 
+const handleAlertCreated = (newAlert) => {
+  alerts.value.push(newAlert);
+  showCreateAlertDialog.value = false;
+};
 </script>
+
 <style>
 .legend-item {
   display: flex;
@@ -87,3 +95,4 @@ const handleAlertCreated  = (newAlert) => {
   background-color: #00a7e3;
 }
 </style>
+

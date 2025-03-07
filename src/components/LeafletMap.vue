@@ -69,7 +69,7 @@ function updateMap() {
         </div>
         <div class="incident-details">
           <p><strong>Lieu :</strong> ${zone_geographique}</p>
-          <p><strong>Date :</strong> ${new Date(alert.date).toLocaleDateString('fr-FR')}</p>
+          <p><strong>Date :</strong> ${new Date(alert.date).toLocaleDateString('fr-FR') + ' - ' + new Date(alert.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
           <p><strong>Contact :</strong> ${contact}</p>
         </div>
         <button class="contact-btn">
