@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { onMounted, watch } from 'vue';
+import { onMounted, watch, defineExpose } from 'vue';
 import { useRouter } from 'vue-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -115,6 +115,40 @@ function updateMap() {
     });
   });
 }
+
+// New function to center map on specific coordinates
+function centerOnCoords(lat, lng, zoom = 15) {
+  if (map) {
+    map.setView([lat, lng], zoom);
+    
+    // Flash animation for the centered location
+    const highlightMarker = L.circleMarker([lat, lng], {
+      radius: 20,
+      color: 'white',
+      weight: 3,
+      opacity: 0.9,
+      fillColor: '#3388ff',
+      fillOpacity: 0.5,
+    }).addTo(map);
+    
+    // Highlight effect with animation
+    let opacity = 1;
+    const fadeOut = setInterval(() => {
+      opacity -= 0.05;
+      if (opacity <= 0) {
+        map.removeLayer(highlightMarker);
+        clearInterval(fadeOut);
+      } else {
+        highlightMarker.setStyle({ opacity, fillOpacity: opacity / 2 });
+      }
+    }, 50);
+  }
+}
+
+// Expose the method to parent components
+defineExpose({
+  centerOnCoords
+});
 </script>
 
 <style scoped>

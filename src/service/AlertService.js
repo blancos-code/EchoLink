@@ -34,6 +34,17 @@ class AlertService {
             throw error;
         }
     }
+    
+    // Add method to get nearby alerts
+    async getNearbyAlerts(coords, distance = 10000) {
+        try {
+            const response = await apiService.get(`/alerts/nearby/${coords}/${distance}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching nearby alerts:", error);
+            throw error;
+        }
+    }
 
     on(event, listener) {
         if (!this.eventListeners[event]) {
